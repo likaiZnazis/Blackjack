@@ -1,0 +1,484 @@
+import random as rand
+
+# Deck consists of 52 cards excluding jokers. 4 suits x 13 different types of cards
+
+
+# clubs
+
+twoC = {"value": 2, "name": "two", "suit": "Clubs"}
+threeC = {"value": 3, "name": "three", "suit": "Clubs"}
+fourC = {"value": 4, "name": "four", "suit": "Clubs"}
+fiveC = {"value": 5, "name": "five", "suit": "Clubs"}
+
+sixC = {"value": 6, "name": "six", "suit": "Clubs"}
+sevenC = {"value": 7, "name": "seven", "suit": "Clubs"}
+eightC = {"value": 8, "name": "eight", "suit": "Clubs"}
+nineC = {"value": 9, "name": "nine", "suit": "Clubs"}
+tenC = {"value": 10, "name": "ten", "suit": "Clubs"}
+jackC = {"value": 10, "name": "jack", "suit": "Clubs"}
+queenC = {"value": 10, "name": "queen", "suit": "Clubs"}
+kingC = {"value": 10, "name": "king", "suit": "Clubs"}
+aceC = {"value": 11, "name": "ace", "suit": "Clubs"}
+
+# spades
+
+twoS = {"value": 2, "name": "two", "suit": "Spades"}
+threeS = {"value": 3, "name": "three", "suit": "Spades"}
+fourS = {"value": 4, "name": "four", "suit": "Spades"}
+fiveS = {"value": 5, "name": "five", "suit": "Spades"}
+sixS = {"value": 6, "name": "six", "suit": "Spades"}
+sevenS = {"value": 7, "name": "seven", "suit": "Spades"}
+eightS = {"value": 8, "name": "eight", "suit": "Spades"}
+nineS = {"value": 9, "name": "nine", "suit": "Spades"}
+tenS = {"value": 10, "name": "ten", "suit": "Spades"}
+jackS = {"value": 10, "name": "jack", "suit": "Spades"}
+queenS = {"value": 10, "name": "queen", "suit": "Spades"}
+kingS = {"value": 10, "name": "king", "suit": "Spades"}
+aceS = {"value": 11, "name": "ace", "suit": "Spades"}
+
+# hearts
+
+twoH = {"value": 2, "name": "two", "suit": "Hearts"}
+threeH = {"value": 3, "name": "three", "suit": "Hearts"}
+fourH = {"value": 4, "name": "four", "suit": "Hearts"}
+fiveH = {"value": 5, "name": "five", "suit": "Hearts"}
+sixH = {"value": 6, "name": "six", "suit": "Hearts"}
+sevenH = {"value": 7, "name": "seven", "suit": "Hearts"}
+eightH = {"value": 8, "name": "eight", "suit": "Hearts"}
+nineH = {"value": 9, "name": "nine", "suit": "Hearts"}
+tenH = {"value": 10, "name": "ten", "suit": "Hearts"}
+
+jackH = {"value": 10, "name": "jack", "suit": "Hearts"}
+queenH = {"value": 10, "name": "queen", "suit": "Hearts"}
+kingH = {"value": 10, "name": "king", "suit": "Hearts"}
+aceH = {"value": 11, "name": "ace", "suit": "Hearts"}
+
+# diamonds
+
+twoD = {"value": 2, "name": "two", "suit": "Diamonds"}
+threeD = {"value": 3, "name": "three", "suit": "Diamonds"}
+fourD = {"value": 4, "name": "four", "suit": "Diamonds"}
+fiveD = {"value": 5, "name": "five", "suit": "Diamonds"}
+sixD = {"value": 6, "name": "six", "suit": "Diamonds"}
+sevenD = {"value": 7, "name": "seven", "suit": "Diamonds"}
+eightD = {"value": 8, "name": "eight", "suit": "Diamonds"}
+
+nineD = {"value": 9, "name": "nine", "suit": "Diamonds"}
+tenD = {"value": 10, "name": "ten", "suit": "Diamonds"}
+jackD = {"value": 10, "name": "jack", "suit": "Diamonds"}
+queenD = {"value": 10, "name": "queen", "suit": "Diamonds"}
+kingD = {"value": 10, "name": "king", "suit": "Diamonds"}
+aceD = {"value": 11, "name": "ace", "suit": "Diamonds"}
+
+
+deckOfCards = [
+    twoC,
+    twoD,
+    twoH,
+    twoS,
+    threeC,
+    threeD,
+    threeH,
+    threeS,
+    fourC,
+    fourD,
+    fourH,
+    fourS,
+    fiveC,
+    fiveD,
+    fiveH,
+    fiveS,
+    sixC,
+    sixD,
+    sixH,
+    sixS,
+    sevenC,
+    sevenD,
+    sevenH,
+    sevenS,
+    eightC,
+    eightD,
+    eightH,
+    eightS,
+    nineC,
+    nineD,
+    nineH,
+    nineS,
+    tenC,
+    tenD,
+    tenH,
+    tenS,
+    jackC,
+    jackD,
+    jackH,
+    jackS,
+    queenC,
+    queenD,
+    queenH,
+    queenS,
+    kingC,
+    kingD,
+    kingH,
+    kingS,
+    aceC,
+    aceD,
+    aceH,
+    aceS,
+]
+
+def shuffle():
+    copyDeck = deckOfCards.copy()
+    shuffledDeck = []
+    for i in range(len(copyDeck)):
+        randomNumber = rand.randrange(len(copyDeck))
+        shuffledDeck.append(copyDeck.pop(randomNumber))
+    return shuffledDeck
+def dealCards():
+    #player.append(shuffledDeck.pop())
+    house.append(shuffledDeck.pop())
+    #player.append(shuffledDeck.pop())
+    player.append(aceD)
+    player.append(aceH)
+    house.append(shuffledDeck.pop())
+    printCards(False)
+def aces(playerHand):
+    if playerHand[0]["name"] == "ace" or playerHand[1]["name"] == "ace":
+        return True
+    return False
+def checkPlayerCards(playerHand):
+    # edge case when both cards are aces, alot of options :/
+    if playerHand[0]["name"] == "ace" and playerHand[1]["name"] == "ace":
+        while True:
+            playerChoice = input("Choose a value 2 or 12 or s - split\n -")
+            if playerChoice == str(12):
+                playerHand[0]["value"] = 1
+                playerHand[1]["value"] = 11
+                return False, [], [], False, False
+            elif playerChoice == str(2):
+                playerHand[0]["value"] = 1
+                playerHand[1]["value"] = 1
+                return False, [], [], False, False
+            elif playerChoice == "s":
+                split = True
+                handOne = [playerHand[0]]
+                handTwo = [playerHand[1]]
+                dealerMove, printHandOne = spliting(handOne, handTwo)
+                return split, handOne, handTwo, printHandOne, dealerMove
+            else:
+                print("Not valid input")
+    # Gives the option to choose between two ace values 1 or 11
+    elif calculateScore(playerHand) < 21:
+        for i in playerHand:
+            if i["name"] == "ace":
+                while True:
+                    aceValue = input(
+                        "Choose {}\{} \n -".format(
+                            calculateScore(playerHand) - 10, calculateScore(playerHand)
+                        )
+                    )
+                    if aceValue == str(calculateScore(playerHand) - 10):
+                        i["value"] = 1
+                        break
+                    elif aceValue == str(calculateScore(playerHand)):
+                        i["value"] = 11
+                        break
+                    else:
+                        print("Not valid input!")
+                        #split, handOne, handTwo, printHandOne, dealerMove = checkPlayerCards(player)
+        return False, [], [], False, False
+def printHouseCardsUp():
+    print("\tHOUSE HAND| {}\t \n ".format(calculateScore(house)))
+    for i in house:
+        print("\t {} \t".format(i))
+    print("\n")
+    print("\n")
+    print("\n")
+    print("\n")
+    print("\n")
+    print("\n")
+def printHouseCardsDown():
+    print("\tHOUSE HAND \n\t{} {}\t".format(house[0], "X"))
+    print("\n")
+    print("\n")
+    print("\n")
+    print("\n")
+    print("\n")
+    print("\n")
+def printPlayerCards():
+    for i in player:
+        print("\t {} \t".format(i))
+    print("\n")
+    print("\tPLAYER HAND| {}\t \n ".format(calculateScore(player)))
+def calculateScore(array):
+    sumPlayer = 0
+    for i in array:
+        sumPlayer = sumPlayer + int(i["value"])
+    return sumPlayer
+# not working perfectly in the second hand
+def splitPrint(handOne, handTwo, printHandOne):
+    control = 0
+    string = ""
+    if printHandOne == True:
+        for j in handTwo:
+            for i in handOne:
+                if control == 0:
+                    string += "\t\t{:2},{:8} \t {:2},{:8} \n".format(
+                        i["value"], i["suit"], j["value"], j["suit"]
+                    )
+                    control += 1
+                else:
+                    string += "\t\t{:2},{:8}\n".format(i["value"], i["suit"])
+        print(string)
+        print(
+            "PLAYER\t\tHAND 1| {}\t\tHAND 2| {}".format(
+                calculateScore(handOne), calculateScore(handTwo)
+            )
+        )
+    else:
+        for j in range(len(handTwo)):
+            if j < len(handOne):
+                string += "\t\t{:2},{:8} \t {:2},{:8} \n".format(
+                    handOne[j]["value"],
+                    handOne[j]["suit"],
+                    handTwo[j]["value"],
+                    handTwo[j]["suit"],
+                )
+            else:
+                string += "\t\t\t\t {:2},{:8} \n".format(
+                    handTwo[j]["value"], handTwo[j]["suit"]
+                )
+        print(string)
+
+        print(
+            "PLAYER\t\tHAND 1| {}\t\tHAND 2| {}".format(
+                calculateScore(handOne), calculateScore(handTwo)
+            )
+        )
+# prob can shorten the code here
+def printWinner():
+    if split != True:
+        if calculateScore(player) > 21 and calculateScore(house) > 21:
+            print("NO ONE WINS")
+        elif calculateScore(player) > 21:
+            print("BUST")
+        elif calculateScore(house) > 21:
+            print("HOUSE BUSTS")
+        elif calculateScore(player) == calculateScore(house):
+            print("TIE")
+        elif calculateScore(player) > calculateScore(house):
+            print("PLAYER WINS WITH {} POINTS".format(calculateScore(player)))
+        elif calculateScore(player) < calculateScore(house):
+            print("HOUSE WINS WITH {} POINTS".format(calculateScore(house)))
+    else:
+        if(calculateScore(handOne) <= 21 and calculateScore(handTwo) <= 21 and calculateScore(house) <= 21):
+            if(calculateScore(handOne) == calculateScore(house) and calculateScore(handTwo) == calculateScore(house)):
+                print("YOU MATCHED ON BOTH HANDS")
+            elif(calculateScore(handOne) > calculateScore(house) and calculateScore(handTwo) > calculateScore(house)):
+                print("YOU WON ON BOTH HANDS")
+            elif(calculateScore(handOne) > calculateScore(house)):
+                print("YOU WON THE FIRST HAND")
+            elif(calculateScore(handTwo) > calculateScore(house)):
+                print("YOU WON THE SECOND HAND")
+            else:
+                print("YOU LOST BOTH HANDS")
+        elif(calculateScore(house) > 21):
+            if(calculateScore(handOne) <= 21 and calculateScore(handTwo) <= 21):
+                print("YOU WON BOTH HANDS")
+            elif(calculateScore(handOne) <= 21):
+                print("YOU WON THE FIRST HAND")
+            elif(calculateScore(handTwo) <= 21):
+                print("YOU WON THE SECOND HAND")
+            else:
+                print("YOU LOST BOTH HANDS")
+        elif(calculateScore(handOne) > 21 or calculateScore(handTwo) > 21):
+            if(calculateScore(handOne) <= 21
+               and calculateScore(house) < calculateScore(handOne)):
+                print("YOU WON THE FIRST HAND")
+            elif(calculateScore(handTwo) <= 21
+                 and calculateScore(house) < calculateScore(handTwo)):
+                print("YOU WONT THE SECOND HAND")
+            elif(calculateScore(handOne) == calculateScore(house)):
+                print("YOU MATCHED THE FIRST HAND")
+            elif(calculateScore(handTwo) == calculateScore(house)):
+                print("YOU MATCHED THE SECOND HAND")
+            
+            else:
+                print("YOU LOST BOTH HANDS")
+        else:
+            if(calculateScore(handOne) == calculateScore(house)):
+                print("YOU MATHCED THE FIRST HAND")
+            elif(calculateScore(handTwo) == calculateScore(house)):
+                print("YOU MATCHED THE SECOND HAND")
+            else:
+                print("YOU LOST BOTH HANDS")
+def drawCard(hand, dealersMove):
+    topCard = shuffledDeck.pop()
+    if dealersMove:
+        if topCard["name"] == "ace" and calculateScore(hand) + 11 > 21:
+            topCard["value"] = 1
+        #if i make just an else statement not elif it will change random card values to 11 :-|
+        elif topCard["name"] == "ace" and calculateScore(hand) + 11 < 21:
+            topCard["value"] = 11
+    else:
+        if topCard["name"] == "ace" and calculateScore(hand) + 11 > 21:
+            topCard["value"] = 1
+        elif topCard["name"] == "ace" and calculateScore(hand) + 11 < 21:
+            while True:
+                print("Choose ace value 1 or 11")
+                playerInput = input("-")
+                if playerInput == str(1):
+                    topCard["value"] = 1
+                    break
+                elif playerInput == str(11):
+                    topCard["value"] = 11
+                    break
+                else:
+                    print("Not valid input!")
+    hand.append(topCard)
+def dealersMove(*args):
+    # dealersMove(split, handOne, handTwo, printHandOne)
+    if args[0] != True:
+        printCards(args[0])
+        while calculateScore(house) < 17 and calculateScore(house) < calculateScore(player) and calculateScore(player) <= 21:
+            drawCard(house,True)
+            printCards(args[0])
+    else:
+        printCards(args[0], args[1], args[2], args[3])
+        while (
+            calculateScore(args[1]) > calculateScore(house)
+            and calculateScore(house) < 17
+        ) or (
+            calculateScore(args[2]) > calculateScore(house)
+            and calculateScore(house) < 17
+        ):
+            drawCard(house, True)
+            printCards(args[0], args[1], args[2], args[3])
+    printWinner()
+    player.clear()
+    house.clear()
+
+def printCards(*args):
+    if args[0] != True:
+        if calculateScore(house) == 21 or dealerMove == True:
+            printHouseCardsUp()
+            printPlayerCards()
+        else:
+            printHouseCardsDown()
+            printPlayerCards()
+    else:
+        if calculateScore(house) == 21 or dealerMove == True:
+            printHouseCardsUp()
+            splitPrint(args[1], args[2], args[3])
+        else:
+            printHouseCardsDown()
+            splitPrint(args[1], args[2], args[3])
+def spliting(handOne, handTwo):
+    split = True
+    printHandOne = True
+    printCards(split, handOne, handTwo, printHandOne)
+    while calculateScore(handOne) < 21:
+        print("HAND 1 - H-hit |\t L-stand |\t ")
+        playerInput = input("-")
+        if playerInput.lower() == "h":
+            drawCard(handOne,False)
+            printCards(split, handOne, handTwo, printHandOne)
+        elif playerInput.lower() == "l":
+            break
+        else:
+            print("Not valid input!")
+    printHandOne = False
+    while calculateScore(handTwo) < 21:
+        print("HAND 2 - H-hit |\t L-stand |\t ")
+        playerInput = input("-")
+        if playerInput.lower() == "h":
+            drawCard(handTwo,False)
+            printCards(split, handOne, handTwo, printHandOne)
+        elif playerInput.lower() == "l":
+
+            break
+        else:
+            print("Not valid input!")
+
+    return True, printHandOne
+
+def resetAces():
+    for i in shuffledDeck:
+        if i["name"] == "ace":
+            i["value"] = 11
+"""
+Things I need to do:
+IF you split aces and get another ace it will set both of their values to 1 - need to select between 2 or 12
+
+Fake money to play with
+Need to add double down
+Need to add visuals to cards
+"""
+# Main game loop
+while True:
+    
+    printHandOne = True
+    player = []
+    house = []
+    dealerMove = False
+    shuffledDeck = shuffle()
+    playerInput = ""
+    split = False
+    if len(shuffledDeck) < 20:
+        print("Changing the deck")
+        resetAces()
+        shuffledDeck = shuffle()
+
+    print("Input | p to play \n q to quit")
+    playerInput = input("-")
+    if playerInput.lower() == "p":
+        dealCards()
+        if aces(player):
+            split, handOne, handTwo, printHandOne, dealerMove = checkPlayerCards(player)
+
+        while calculateScore(player) < 21 and split != True:
+
+            if (
+                player[0]["name"] == player[1]["name"]
+                and player[0]["value"] == player[1]["value"]
+            ):
+                print("S-split |\t H-hit |\t L-stand |\t ")
+                playerInput = input("-")
+
+                if playerInput.lower() == "s":
+                    handOne = [player[0]]
+                    handTwo = [player[1]]
+                    dealerMove, printHandOne = spliting(handOne, handTwo)
+                    split = True
+                elif playerInput.lower() == "h":
+                    drawCard(player, False)
+                    printCards(split)
+                elif playerInput.lower() == "l":
+                    dealerMove = True
+                    break
+                else:
+                    print("Not valid input!")
+            else:
+                print(" H-hit |\t L-stand |\t ")
+                playerInput = input("-")
+
+                if playerInput.lower() == "h":
+                    drawCard(player, False)
+                    printCards(split)
+                elif playerInput.lower() == "l":
+                    dealerMove = True
+                    break
+                else:
+                    print("Not valid input!")
+        if calculateScore(player) >= 21:
+            dealerMove = True
+        if split:
+            dealersMove(split, handOne, handTwo, printHandOne)
+        else:
+            dealersMove(split)
+        
+        dealerMove = False
+        split = False
+    elif playerInput.lower() == "q":
+        break
+    else:
+        print("\nNot valid input! \n")
