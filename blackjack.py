@@ -134,11 +134,12 @@ def shuffle():
         shuffledDeck.append(copyDeck.pop(randomNumber))
     return shuffledDeck
 def dealCards():
-    #player.append(shuffledDeck.pop())
+    player.append(shuffledDeck.pop())
     house.append(shuffledDeck.pop())
-    #player.append(shuffledDeck.pop())
-    player.append(aceD)
-    player.append(aceH)
+    player.append(shuffledDeck.pop())
+    #two aci time
+    #player.append(aceD)
+    #player.append(aceH)
     house.append(shuffledDeck.pop())
     printCards(False)
 def aces(playerHand):
@@ -209,6 +210,7 @@ def printPlayerCards():
         print("\t {} \t".format(i))
     print("\n")
     print("\tPLAYER HAND| {}\t \n ".format(calculateScore(player)))
+    print("BET - {}".format(bet))
 def calculateScore(array):
     sumPlayer = 0
     for i in array:
@@ -234,6 +236,7 @@ def splitPrint(handOne, handTwo, printHandOne):
                 calculateScore(handOne), calculateScore(handTwo)
             )
         )
+        print("BET - {}".format(bet))
     else:
         for j in range(len(handTwo)):
             if j < len(handOne):
@@ -254,20 +257,24 @@ def splitPrint(handOne, handTwo, printHandOne):
                 calculateScore(handOne), calculateScore(handTwo)
             )
         )
+        print("BET - {}".format(bet))
 # prob can shorten the code here
 def printWinner():
+    returnMoney = bet
     if split != True:
-        if calculateScore(player) > 21 and calculateScore(house) > 21:
-            print("NO ONE WINS")
-        elif calculateScore(player) > 21:
+        if calculateScore(player) > 21:
+            returnMoney = 0
             print("BUST")
         elif calculateScore(house) > 21:
+            returnMoney += returnMoney
             print("HOUSE BUSTS")
         elif calculateScore(player) == calculateScore(house):
             print("TIE")
         elif calculateScore(player) > calculateScore(house):
+            returnMoney += returnMoney
             print("PLAYER WINS WITH {} POINTS".format(calculateScore(player)))
         elif calculateScore(player) < calculateScore(house):
+            returnMoney = 0
             print("HOUSE WINS WITH {} POINTS".format(calculateScore(house)))
     else:
         if(calculateScore(handOne) <= 21 and calculateScore(handTwo) <= 21 and calculateScore(house) <= 21):
@@ -311,6 +318,8 @@ def printWinner():
                 print("YOU MATCHED THE SECOND HAND")
             else:
                 print("YOU LOST BOTH HANDS")
+    return returnMoney
+    
 def drawCard(hand, dealersMove):
     topCard = shuffledDeck.pop()
     if dealersMove:
@@ -347,10 +356,12 @@ def dealersMove(*args):
         while (
             calculateScore(args[1]) > calculateScore(house)
             and calculateScore(house) < 17
-        ) or (
+            and calculateScore(args[1]) <= 21
+        or 
             calculateScore(args[2]) > calculateScore(house)
             and calculateScore(house) < 17
-        ):
+            and calculateScore(args[2]) <= 21
+        ) :
             drawCard(house, True)
             printCards(args[0], args[1], args[2], args[3])
     printWinner()
@@ -408,20 +419,19 @@ def resetAces():
 """
 Things I need to do:
 IF you split aces and get another ace it will set both of their values to 1 - need to select between 2 or 12
-
-Fake money to play with
-Need to add double down
+Fake money to play with - printWinner function should return a value that would increase money 
 Need to add visuals to cards
 """
 # Main game loop
+money = 500
 while True:
-    
     printHandOne = True
     player = []
     house = []
     dealerMove = False
     shuffledDeck = shuffle()
     playerInput = ""
+    bet = 0
     split = False
     if len(shuffledDeck) < 20:
         print("Changing the deck")
@@ -431,17 +441,28 @@ while True:
     print("Input | p to play \n q to quit")
     playerInput = input("-")
     if playerInput.lower() == "p":
+        while(True):
+            try:
+                playerInput = int(input("PLACE YOUR BET, YOU HAVE {} $ \n-".format(money)))
+                if money - playerInput < 0:
+                    print("STOP GAMBLING")
+            except:
+                print("INPUT A NUMBER!")
+            else:
+                bet = playerInput
+                money -= playerInput
+                break
         dealCards()
         if aces(player):
             split, handOne, handTwo, printHandOne, dealerMove = checkPlayerCards(player)
 
-        while calculateScore(player) < 21 and split != True:
+        while calculateScore(player) < 21 and split != True and dealerMove != True:
 
             if (
                 player[0]["name"] == player[1]["name"]
                 and player[0]["value"] == player[1]["value"]
             ):
-                print("S-split |\t H-hit |\t L-stand |\t ")
+                print("S-split |\t H-hit |\t L-stand |\t D - double down |")
                 playerInput = input("-")
 
                 if playerInput.lower() == "s":
@@ -452,18 +473,26 @@ while True:
                 elif playerInput.lower() == "h":
                     drawCard(player, False)
                     printCards(split)
+                elif playerInput.lower() == "d":
+                    drawCard(player, False)
+                    printCards(split)
+                    dealerMove = True
                 elif playerInput.lower() == "l":
                     dealerMove = True
                     break
                 else:
                     print("Not valid input!")
             else:
-                print(" H-hit |\t L-stand |\t ")
+                print(" H-hit |\t D - double down |\t L-stand | ")
                 playerInput = input("-")
 
                 if playerInput.lower() == "h":
                     drawCard(player, False)
                     printCards(split)
+                elif playerInput.lower() == "d":
+                    drawCard(player, False)
+                    printCards(split)
+                    dealerMove = True
                 elif playerInput.lower() == "l":
                     dealerMove = True
                     break
