@@ -265,11 +265,14 @@ def printWinner():
         if calculateScore(player) > 21:
             returnMoney = 0
             print("BUST")
+        elif calculateScore(player) == calculateScore(house):
+            print("TIE")
+        elif calculateScore(player) == 21 and move == 0:
+            returnMoney = returnMoney * 1.5
+            print("BLACKJACK")
         elif calculateScore(house) > 21:
             returnMoney += returnMoney
             print("HOUSE BUSTS")
-        elif calculateScore(player) == calculateScore(house):
-            print("TIE")
         elif calculateScore(player) > calculateScore(house):
             returnMoney += returnMoney
             print("PLAYER WINS WITH {} POINTS".format(calculateScore(player)))
@@ -279,44 +282,61 @@ def printWinner():
     else:
         if(calculateScore(handOne) <= 21 and calculateScore(handTwo) <= 21 and calculateScore(house) <= 21):
             if(calculateScore(handOne) == calculateScore(house) and calculateScore(handTwo) == calculateScore(house)):
+                returnMoney = returnMoney
                 print("YOU MATCHED ON BOTH HANDS")
             elif(calculateScore(handOne) > calculateScore(house) and calculateScore(handTwo) > calculateScore(house)):
+                returnMoney += returnMoney
                 print("YOU WON ON BOTH HANDS")
             elif(calculateScore(handOne) > calculateScore(house)):
+                returnMoney = returnMoney / 2
                 print("YOU WON THE FIRST HAND")
             elif(calculateScore(handTwo) > calculateScore(house)):
+                returnMoney = returnMoney / 2
                 print("YOU WON THE SECOND HAND")
             else:
+                returnMoney = 0
                 print("YOU LOST BOTH HANDS")
         elif(calculateScore(house) > 21):
             if(calculateScore(handOne) <= 21 and calculateScore(handTwo) <= 21):
+                returnMoney += returnMoney
                 print("YOU WON BOTH HANDS")
             elif(calculateScore(handOne) <= 21):
+                returnMoney = returnMoney / 2
                 print("YOU WON THE FIRST HAND")
             elif(calculateScore(handTwo) <= 21):
+                returnMoney = returnMoney / 2
                 print("YOU WON THE SECOND HAND")
             else:
+                returnMoney = 0
                 print("YOU LOST BOTH HANDS")
         elif(calculateScore(handOne) > 21 or calculateScore(handTwo) > 21):
             if(calculateScore(handOne) <= 21
                and calculateScore(house) < calculateScore(handOne)):
+                returnMoney = returnMoney / 2
                 print("YOU WON THE FIRST HAND")
             elif(calculateScore(handTwo) <= 21
                  and calculateScore(house) < calculateScore(handTwo)):
-                print("YOU WONT THE SECOND HAND")
+                returnMoney = returnMoney / 2
+                print("YOU WON THE SECOND HAND")
             elif(calculateScore(handOne) == calculateScore(house)):
+                returnMoney = returnMoney / 2
                 print("YOU MATCHED THE FIRST HAND")
             elif(calculateScore(handTwo) == calculateScore(house)):
+                returnMoney = returnMoney / 2
                 print("YOU MATCHED THE SECOND HAND")
             
             else:
+                returnMoney = 0
                 print("YOU LOST BOTH HANDS")
         else:
             if(calculateScore(handOne) == calculateScore(house)):
+                returnMoney = returnMoney / 2
                 print("YOU MATHCED THE FIRST HAND")
             elif(calculateScore(handTwo) == calculateScore(house)):
+                returnMoney = returnMoney / 2
                 print("YOU MATCHED THE SECOND HAND")
             else:
+                returnMoney = 0
                 print("YOU LOST BOTH HANDS")
     return returnMoney
     
@@ -364,10 +384,7 @@ def dealersMove(*args):
         ) :
             drawCard(house, True)
             printCards(args[0], args[1], args[2], args[3])
-    printWinner()
-    player.clear()
-    house.clear()
-
+    return printWinner()
 def printCards(*args):
     if args[0] != True:
         if calculateScore(house) == 21 or dealerMove == True:
@@ -411,7 +428,6 @@ def spliting(handOne, handTwo):
             print("Not valid input!")
 
     return True, printHandOne
-
 def resetAces():
     for i in shuffledDeck:
         if i["name"] == "ace":
@@ -419,7 +435,7 @@ def resetAces():
 """
 Things I need to do:
 IF you split aces and get another ace it will set both of their values to 1 - need to select between 2 or 12
-Fake money to play with - printWinner function should return a value that would increase money 
+Money should not go negative
 Need to add visuals to cards
 """
 # Main game loop
@@ -428,6 +444,7 @@ while True:
     printHandOne = True
     player = []
     house = []
+    move = 0
     dealerMove = False
     shuffledDeck = shuffle()
     playerInput = ""
@@ -437,7 +454,6 @@ while True:
         print("Changing the deck")
         resetAces()
         shuffledDeck = shuffle()
-
     print("Input | p to play \n q to quit")
     playerInput = input("-")
     if playerInput.lower() == "p":
@@ -453,46 +469,66 @@ while True:
                 money -= playerInput
                 break
         dealCards()
-        if aces(player):
+        if aces(player) and calculateScore(player) != 21:
             split, handOne, handTwo, printHandOne, dealerMove = checkPlayerCards(player)
-
         while calculateScore(player) < 21 and split != True and dealerMove != True:
-
             if (
                 player[0]["name"] == player[1]["name"]
                 and player[0]["value"] == player[1]["value"]
             ):
-                print("S-split |\t H-hit |\t L-stand |\t D - double down |")
+                if move == 0:
+                    print("S-split |\t H-hit |\t L-stand |\t D - double down |")
+                else:
+                    print("S-split |\t H-hit |\t L-stand |")
                 playerInput = input("-")
-
                 if playerInput.lower() == "s":
-                    handOne = [player[0]]
-                    handTwo = [player[1]]
-                    dealerMove, printHandOne = spliting(handOne, handTwo)
-                    split = True
+                    if money - bet >= 0:
+                        money -= bet
+                        bet += bet
+                        handOne = [player[0]]
+                        handTwo = [player[1]]
+                        dealerMove, printHandOne = spliting(handOne, handTwo)
+                        split = True
+                    else:
+                        print("YOU DONT HAVE ENOUGH MONEY :()")
                 elif playerInput.lower() == "h":
                     drawCard(player, False)
                     printCards(split)
-                elif playerInput.lower() == "d":
-                    drawCard(player, False)
-                    printCards(split)
-                    dealerMove = True
+                    move+=1
+                elif playerInput.lower() == "d" and move == 0:
+                    if money - bet * 2 >= 0:
+                        money -= bet
+                        bet += bet
+                        drawCard(player, False)
+                        printCards(split)
+                        dealerMove = True
+                    else:
+                        print("YOU DONT HAVE ENOUGH MONEY :()")
                 elif playerInput.lower() == "l":
                     dealerMove = True
                     break
                 else:
                     print("Not valid input!")
             else:
-                print(" H-hit |\t D - double down |\t L-stand | ")
+                if move == 0:
+                    print("H-hit |\t L-stand |\t D - double down |")
+                else:
+                    print("H-hit |\t L-stand |")
                 playerInput = input("-")
 
                 if playerInput.lower() == "h":
                     drawCard(player, False)
                     printCards(split)
-                elif playerInput.lower() == "d":
-                    drawCard(player, False)
-                    printCards(split)
-                    dealerMove = True
+                    move+=1
+                elif playerInput.lower() == "d" and move == 0:
+                    if money - bet >= 0:
+                        money -= bet
+                        bet += bet
+                        drawCard(player, False)
+                        printCards(split)
+                        dealerMove = True
+                    else:
+                        print("YOU DONT HAVE ENOUGH MONEY :()")
                 elif playerInput.lower() == "l":
                     dealerMove = True
                     break
@@ -501,12 +537,11 @@ while True:
         if calculateScore(player) >= 21:
             dealerMove = True
         if split:
-            dealersMove(split, handOne, handTwo, printHandOne)
+            money += dealersMove(split, handOne, handTwo, printHandOne)
         else:
-            dealersMove(split)
-        
-        dealerMove = False
-        split = False
+            money += dealersMove(split)
+        player.clear()
+        house.clear()
     elif playerInput.lower() == "q":
         break
     else:
