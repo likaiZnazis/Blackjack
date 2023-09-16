@@ -146,7 +146,7 @@ def aces(playerHand):
     if playerHand[0]["name"] == "ace" or playerHand[1]["name"] == "ace":
         return True
     return False
-def checkPlayerCards(playerHand):
+def checkPlayerCards(playerHand, money, bet):
     # edge case when both cards are aces, alot of options :/
     if playerHand[0]["name"] == "ace" and playerHand[1]["name"] == "ace":
         while True:
@@ -160,11 +160,17 @@ def checkPlayerCards(playerHand):
                 playerHand[1]["value"] = 1
                 return False, [], [], False, False
             elif playerChoice == "s":
-                split = True
-                handOne = [playerHand[0]]
-                handTwo = [playerHand[1]]
-                dealerMove, printHandOne = spliting(handOne, handTwo)
-                return split, handOne, handTwo, printHandOne, dealerMove
+                if money - bet >= 0:
+                    money -= bet
+                    bet += bet
+                    split = True
+                    handOne = [playerHand[0]]
+                    handTwo = [playerHand[1]]
+                    print(bet)
+                    dealerMove, printHandOne = spliting(handOne, handTwo, bet)
+                    return split, handOne, handTwo, printHandOne, dealerMove, money, bet
+                else:
+                    print("YOU DONT HAVE ENOUGH MONEY :()")
             else:
                 print("Not valid input")
     # Gives the option to choose between two ace values 1 or 11
@@ -186,7 +192,7 @@ def checkPlayerCards(playerHand):
                     else:
                         print("Not valid input!")
                         #split, handOne, handTwo, printHandOne, dealerMove = checkPlayerCards(player)
-        return False, [], [], False, False
+        return False, [], [], False, False, money, bet
 def printHouseCardsUp():
     print("\tHOUSE HAND| {}\t \n ".format(calculateScore(house)))
     for i in house:
@@ -217,7 +223,8 @@ def calculateScore(array):
         sumPlayer = sumPlayer + int(i["value"])
     return sumPlayer
 # not working perfectly in the second hand
-def splitPrint(handOne, handTwo, printHandOne):
+def splitPrint(handOne, handTwo, printHandOne, bet):
+    print(bet)
     control = 0
     string = ""
     if printHandOne == True:
@@ -372,7 +379,7 @@ def dealersMove(*args):
             drawCard(house,True)
             printCards(args[0])
     else:
-        printCards(args[0], args[1], args[2], args[3])
+        printCards(args[0], args[1], args[2], args[3], args[4])
         while (
             calculateScore(args[1]) > calculateScore(house)
             and calculateScore(house) < 17
@@ -383,7 +390,7 @@ def dealersMove(*args):
             and calculateScore(args[2]) <= 21
         ) :
             drawCard(house, True)
-            printCards(args[0], args[1], args[2], args[3])
+            printCards(args[0], args[1], args[2], args[3], args[4])
     return printWinner()
 def printCards(*args):
     if args[0] != True:
@@ -396,20 +403,21 @@ def printCards(*args):
     else:
         if calculateScore(house) == 21 or dealerMove == True:
             printHouseCardsUp()
-            splitPrint(args[1], args[2], args[3])
+            splitPrint(args[1], args[2], args[3], args[4])
         else:
             printHouseCardsDown()
-            splitPrint(args[1], args[2], args[3])
-def spliting(handOne, handTwo):
+            splitPrint(args[1], args[2], args[3], args[4])
+
+def spliting(handOne, handTwo,bet):
     split = True
     printHandOne = True
-    printCards(split, handOne, handTwo, printHandOne)
+    printCards(split, handOne, handTwo, printHandOne, bet)
     while calculateScore(handOne) < 21:
         print("HAND 1 - H-hit |\t L-stand |\t ")
         playerInput = input("-")
         if playerInput.lower() == "h":
             drawCard(handOne,False)
-            printCards(split, handOne, handTwo, printHandOne)
+            printCards(split, handOne, handTwo, printHandOne, bet)
         elif playerInput.lower() == "l":
             break
         else:
@@ -420,9 +428,8 @@ def spliting(handOne, handTwo):
         playerInput = input("-")
         if playerInput.lower() == "h":
             drawCard(handTwo,False)
-            printCards(split, handOne, handTwo, printHandOne)
+            printCards(split, handOne, handTwo, printHandOne, bet)
         elif playerInput.lower() == "l":
-
             break
         else:
             print("Not valid input!")
@@ -434,7 +441,6 @@ def resetAces():
             i["value"] = 11
 """
 Things I need to do:
-IF you split aces and get another ace it will set both of their values to 1 - need to select between 2 or 12
 Money should not go negative
 Need to add visuals to cards
 """
@@ -470,7 +476,7 @@ while True:
                 break
         dealCards()
         if aces(player) and calculateScore(player) != 21:
-            split, handOne, handTwo, printHandOne, dealerMove = checkPlayerCards(player)
+            split, handOne, handTwo, printHandOne, dealerMove, money, bet = checkPlayerCards(player, money, bet)
         while calculateScore(player) < 21 and split != True and dealerMove != True:
             if (
                 player[0]["name"] == player[1]["name"]
@@ -537,7 +543,7 @@ while True:
         if calculateScore(player) >= 21:
             dealerMove = True
         if split:
-            money += dealersMove(split, handOne, handTwo, printHandOne)
+            money += dealersMove(split, handOne, handTwo, printHandOne, bet)
         else:
             money += dealersMove(split)
         player.clear()
