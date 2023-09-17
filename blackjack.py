@@ -446,17 +446,17 @@ Need to add visuals to cards
 """
 # Main game loop
 money = 500
+shuffledDeck = shuffle()
 while True:
     printHandOne = True
     player = []
     house = []
     move = 0
     dealerMove = False
-    shuffledDeck = shuffle()
     playerInput = ""
     bet = 0
     split = False
-    if len(shuffledDeck) < 20:
+    if len(shuffledDeck) < 15:
         print("Changing the deck")
         resetAces()
         shuffledDeck = shuffle()
@@ -477,7 +477,9 @@ while True:
         dealCards()
         if aces(player) and calculateScore(player) != 21:
             split, handOne, handTwo, printHandOne, dealerMove, money, bet = checkPlayerCards(player, money, bet)
-        while calculateScore(player) < 21 and split != True and dealerMove != True:
+        #There was a split condition in this loop
+        while calculateScore(player) < 21 and dealerMove != True:
+            print(len(shuffledDeck))
             if (
                 player[0]["name"] == player[1]["name"]
                 and player[0]["value"] == player[1]["value"]
@@ -493,7 +495,7 @@ while True:
                         bet += bet
                         handOne = [player[0]]
                         handTwo = [player[1]]
-                        dealerMove, printHandOne = spliting(handOne, handTwo)
+                        dealerMove, printHandOne = spliting(handOne, handTwo, bet)
                         split = True
                     else:
                         print("YOU DONT HAVE ENOUGH MONEY :()")
