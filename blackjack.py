@@ -196,7 +196,10 @@ def checkPlayerCards(playerHand, money, bet):
 def printHouseCardsUp():
     print("\tHOUSE HAND| {}\t \n ".format(calculateScore(house)))
     for i in house:
-        print("\t {} \t".format(i))
+        print("""\t____\t
+                  |{} 
+                  |
+                  |""".format(i))
     print("\n")
     print("\n")
     print("\n")
@@ -392,6 +395,7 @@ def dealersMove(*args):
             drawCard(house, True)
             printCards(args[0], args[1], args[2], args[3], args[4])
     return printWinner()
+
 def printCards(*args):
     if args[0] != True:
         if calculateScore(house) == 21 or dealerMove == True:
@@ -441,13 +445,13 @@ def resetAces():
             i["value"] = 11
 """
 Things I need to do:
-Money should not go negative
-Need to add visuals to cards
+I think i need to remake print functions or make a new function that takes in cards and transformes them into actual cards
 """
 # Main game loop
 money = 500
 shuffledDeck = shuffle()
-while True:
+run = True
+while run:
     printHandOne = True
     player = []
     house = []
@@ -463,17 +467,40 @@ while True:
     print("Input | p to play \n q to quit")
     playerInput = input("-")
     if playerInput.lower() == "p":
-        while(True):
+        while(True and run):
             try:
                 playerInput = int(input("PLACE YOUR BET, YOU HAVE {} $ \n-".format(money)))
                 if money - playerInput < 0:
-                    print("STOP GAMBLING")
+                    print("YOU DONT HAVE ENOUGH FUNDS")
+                    print("YOU CAN ADD MORE MONEY OR STOP PLAYING(add or stop)")
+                    while(True):
+                        inputMode = input("-")
+                        if(inputMode.lower() == "add"):
+                            while(True):
+                                try:
+                                    inputMoney = int(input("HOW MUCH MONEY DO YOU WANT TO DEPOSIT? \n-"))
+                                    if(money + inputMoney < playerInput ):
+                                        print("ADD THE RIGHT AMOUNT TO MATCH THE BET")
+                                        continue
+                                except:
+                                    ("INPUT A NUMBER!")
+                                else:
+                                    money += inputMoney
+                                    break
+                            break
+                        elif(inputMode.lower() == "stop"):
+                            run = False
+                            break
+                        else:
+                            print("NOT VALID INPUT (add or stop)")
             except:
                 print("INPUT A NUMBER!")
             else:
                 bet = playerInput
                 money -= playerInput
                 break
+        if not run:
+            break
         dealCards()
         if aces(player) and calculateScore(player) != 21:
             split, handOne, handTwo, printHandOne, dealerMove, money, bet = checkPlayerCards(player, money, bet)
@@ -550,7 +577,7 @@ while True:
             money += dealersMove(split)
         player.clear()
         house.clear()
-    elif playerInput.lower() == "q":
+    elif playerInput.lower() == "q" or not run:
         break
     else:
         print("\nNot valid input! \n")
