@@ -125,6 +125,31 @@ deckOfCards = [
     aceH,
     aceS,
 ]
+""""
+playing cards suits in unicode, has a problem that its in different sizes.
+
+""" 
+def printLineDown(deckSize):
+	string = ""
+	for i in range(len(deckSize)):
+		string += " ---- "
+	return string
+
+def printStraightLine(deck):
+	string = ""
+	for i in range(len(deck)):
+		string += "|    |"
+	return string
+
+def convertSuit(suit):
+	if suit == "Diamonds":
+		return u'\u2666'
+	elif suit == "Hearts":
+		return u'\u2665'
+	elif suit == "Spades":
+		return u'\u2660'
+	else:
+		return u'\u2663'
 
 def shuffle():
     copyDeck = deckOfCards.copy()
@@ -194,12 +219,21 @@ def checkPlayerCards(playerHand, money, bet):
                         #split, handOne, handTwo, printHandOne, dealerMove = checkPlayerCards(player)
         return False, [], [], False, False, money, bet
 def printHouseCardsUp():
-    print("\tHOUSE HAND| {}\t \n ".format(calculateScore(house)))
+    print("\tHOUSE HAND - {} \n".format(calculateScore(house)))
+    string = ""
+    string += (printLineDown(house) + "\n")
+    #need to look at the value if the value is double digits then
+    #i have to print it in a different way
     for i in house:
-        print("""\t____\t
-                  |{} 
-                  |
-                  |""".format(i))
+        #double
+        if (i["value"] > 9):
+            string += ("|{}{} |".format(i["value"], convertSuit(i["suit"])))
+        else:
+            string += ("|{}{}  |".format(i["value"], convertSuit(i["suit"])))
+    string += ("\n" + printStraightLine(house))
+    string += ("\n" + printStraightLine(house)+ "\n")
+    string += ( printLineDown(house))
+    print(string)
     print("\n")
     print("\n")
     print("\n")
@@ -207,7 +241,17 @@ def printHouseCardsUp():
     print("\n")
     print("\n")
 def printHouseCardsDown():
-    print("\tHOUSE HAND \n\t{} {}\t".format(house[0], "X"))
+    print("\tHOUSE HAND - {} \n".format(calculateScore(house)))
+    string = ""
+    string += (printLineDown(house) + "\n")
+    if (house[0]["value"] > 9):
+        string += ("|{}{} || X  |".format(house[0]["value"], convertSuit(house[0]["suit"])))
+    else:
+        string += ("|{}{}  || X  |".format(house[0]["value"], convertSuit(house[0]["suit"])))
+    string += ("\n" + printStraightLine(house))
+    string += ("\n" + printStraightLine(house) + "\n")
+    string += ( printLineDown(house))
+    print(string)
     print("\n")
     print("\n")
     print("\n")
