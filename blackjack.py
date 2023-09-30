@@ -259,8 +259,20 @@ def printHouseCardsDown():
     print("\n")
     print("\n")
 def printPlayerCards():
+    string = ""
+    string += (printLineDown(player) + "\n")
+    #need to look at the value if the value is double digits then
+    #i have to print it in a different way
     for i in player:
-        print("\t {} \t".format(i))
+        #double
+        if (i["value"] > 9):
+            string += ("|{}{} |".format(i["value"], convertSuit(i["suit"])))
+        else:
+            string += ("|{}{}  |".format(i["value"], convertSuit(i["suit"])))
+    string += ("\n" + printStraightLine(player))
+    string += ("\n" + printStraightLine(player)+ "\n")
+    string += ( printLineDown(player))
+    print(string)
     print("\n")
     print("\tPLAYER HAND| {}\t \n ".format(calculateScore(player)))
     print("BET - {}".format(bet))
