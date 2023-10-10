@@ -121,14 +121,11 @@ deckOfCards = [
     kingH,
     kingS,
     aceC,
-    aceD,
-    aceH,
+    #aceD,
+    #aceH,
     aceS,
 ]
-""""
-playing cards suits in unicode, has a problem that its in different sizes.
 
-""" 
 def printLineDown(deckSize):
 	string = ""
 	for i in range(len(deckSize)):
@@ -159,12 +156,12 @@ def shuffle():
         shuffledDeck.append(copyDeck.pop(randomNumber))
     return shuffledDeck
 def dealCards():
-    player.append(shuffledDeck.pop())
+    #player.append(shuffledDeck.pop())
     house.append(shuffledDeck.pop())
-    player.append(shuffledDeck.pop())
+    #player.append(shuffledDeck.pop())
     #two aci time
-    #player.append(aceD)
-    #player.append(aceH)
+    player.append(aceD)
+    player.append(aceH)
     house.append(shuffledDeck.pop())
     printCards(False)
 def aces(playerHand):
@@ -179,11 +176,11 @@ def checkPlayerCards(playerHand, money, bet):
             if playerChoice == str(12):
                 playerHand[0]["value"] = 1
                 playerHand[1]["value"] = 11
-                return False, [], [], False, False
+                return False, [], [], False, False, money, bet
             elif playerChoice == str(2):
                 playerHand[0]["value"] = 1
                 playerHand[1]["value"] = 1
-                return False, [], [], False, False
+                return False, [], [], False, False, money, bet
             elif playerChoice == "s":
                 if money - bet >= 0:
                     money -= bet
@@ -282,7 +279,37 @@ def calculateScore(array):
         sumPlayer = sumPlayer + int(i["value"])
     return sumPlayer
 # not working perfectly in the second hand
+#need to recreate it so that it prints actual cards
 def splitPrint(handOne, handTwo, printHandOne, bet):
+    string = ""
+    string += (printLineDown(handOne) + "\n")
+    for i in handOne:
+        #double
+        if (i["value"] > 9):
+            string += ("|{}{} |".format(i["value"], convertSuit(i["suit"])))
+        else:
+            string += ("|{}{}  |".format(i["value"], convertSuit(i["suit"])))
+    string += ("\n" + printStraightLine(handOne))
+    string += ("\n" + printStraightLine(handOne)+ "\n")
+    string += ( printLineDown(handOne))
+    string += ( "HAND 1| {}".format(calculateScore(handOne)))
+
+    
+
+    string += (  "\n" + printLineDown(handTwo) + "\n")
+    for i in handTwo:
+        #double
+        if (i["value"] > 9):
+            string += ("|{}{} |".format(i["value"], convertSuit(i["suit"])))
+        else:
+            string += ("|{}{}  |".format(i["value"], convertSuit(i["suit"])))
+    string += ("\n" + printStraightLine(handTwo))
+    string += ("\n" + printStraightLine(handTwo)+ "\n")
+    string += ( printLineDown(handTwo))
+    string += ( "HAND 2| {}".format(calculateScore(handTwo)))
+    print(string)
+    print("BET - {}".format(bet))
+    """
     print(bet)
     control = 0
     string = ""
@@ -324,6 +351,8 @@ def splitPrint(handOne, handTwo, printHandOne, bet):
             )
         )
         print("BET - {}".format(bet))
+    """
+    
 # prob can shorten the code here
 def printWinner():
     returnMoney = bet
@@ -408,6 +437,7 @@ def printWinner():
     
 def drawCard(hand, dealersMove):
     topCard = shuffledDeck.pop()
+    print(topCard)
     if dealersMove:
         if topCard["name"] == "ace" and calculateScore(hand) + 11 > 21:
             topCard["value"] = 1
