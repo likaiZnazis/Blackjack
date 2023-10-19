@@ -1,116 +1,207 @@
-import random
+import random as rand
 # Ta pati deja cits stils
-
-# Karsu kavas no kurienes vares panemt karti
 
 
 class Table():
-    def __init__(self, player, dealer, deck):
-        self.player = Human(player, [], 0, 1000)
-        self.dealer = Dealer(dealer, [], 0)
+
+    def __init__(self, player, dealer):
+        self.player = Human(player, [])
+        self.dealer = Dealer(dealer, [])
         self.deck = Deck()
+
+        self.deal_first_hand()
+
+    def deal_first_hand(self):
+        self.player.hand.append(self.deck.giveCard())
+        self.dealer.hand.append(self.deck.giveCard())
+        self.player.hand.append(self.deck.giveCard())
+        self.dealer.hand.append(self.deck.giveCard())
+
+    # Izprinteju galdu jeb kartis kas atrodas uz galda un speletaju rokas summu.
+    def __str__(self):
+        string = ""
+        string += "{}".format(self.dealer)
+        string += "\n\n\n\n\n\n"
+        string += "{}".format(self.player)
+        return string
+
+
+class Card():
+
+    """
+    Karsu klase, lai lasamak varetu savienotu kodu, jo tas es tas varetu likt
+    dictionerijos. Vieglak varetu izprintet kartis,
+    kartis kuras ir ar divciparu skailti tiks izprintetas nedaudz lielakas.
+
+    Klase ir kopa ar karsu zimem.
+
+    Klasei ir vertibas un zimes ipasibas.
+
+    String funkcijas, kas izprinte kartis iegaumejot to vertibu un izmantojot kopu ar
+    karsu zimem
+
+    """
+    suit_unicode = {
+        "Diamonds": "\u2666",
+        "Hearts": "\u2665",
+        "Spades": "\u2660",
+        "Clubs": "\u2663"
+    }
+
+    def __init__(self, value, suit):
+        self.value = value
+        self.suit = suit
+
+    def __str__(self):
+        if self.value > 9:
+            string = " ----- "
+            string += "\n|{} {} |".format(self.value,
+                                          self.suit_unicode[self.suit])
+            string += "\n|     |"
+            string += "\n|     |"
+            string += "\n ----- "
+        else:
+            string = " ---- "
+            string += "\n|{} {} |".format(self.value,
+                                          self.suit_unicode[self.suit])
+            string += "\n|    |"
+            string += "\n|    |"
+            string += "\n ---- "
+
+        return string
 
 
 class Deck():
+
+    """
+    Karsu kavas klase, kurai ipasibas bus kava un kavu samaisisanam, kur kavu uzreiz samaisis.
+    Kavai kartis tiek veidotas no karsu klases.
+
+    Funkcijas: iedot augsejo karti un samasit karsu kavu. Samainis eksistejoso kavu pret
+    samaisto kavu.
+
+    """
+
     def __init__(self):
         # Velak varetu uztaisit karsu klasi - (Card)
-        self.deck = [{"value": 2, "name": "two", "suit": "Clubs"},
-                     {"value": 3, "name": "three", "suit": "Clubs"},
-                     {"value": 4, "name": "four", "suit": "Clubs"},
-                     {"value": 5, "name": "five", "suit": "Clubs"},
-                     {"value": 6, "name": "six", "suit": "Clubs"},
-                     {"value": 7, "name": "seven", "suit": "Clubs"},
-                     {"value": 8, "name": "eight", "suit": "Clubs"},
-                     {"value": 9, "name": "nine", "suit": "Clubs"},
-                     {"value": 10, "name": "ten", "suit": "Clubs"},
-                     {"value": 10, "name": "jack", "suit": "Clubs"},
-                     {"value": 10, "name": "queen", "suit": "Clubs"},
-                     {"value": 10, "name": "king", "suit": "Clubs"},
-                     {"value": 11, "name": "ace", "suit": "Clubs"},
+        self.deck = [Card(2, "Clubs"),
+                     Card(3, "Clubs"),
+                     Card(4, "Clubs"),
+                     Card(5, "Clubs"),
+                     Card(6, "Clubs"),
+                     Card(7, "Clubs"),
+                     Card(8, "Clubs"),
+                     Card(9, "Clubs"),
+                     Card(10, "Clubs"),
+                     Card(10, "Clubs"),
+                     Card(10, "Clubs"),
+                     Card(10, "Clubs"),
+                     Card(11, "Clubs"),
                      # spades
-                     {"value": 2, "name": "two", "suit": "Spades"},
-                     {"value": 3, "name": "three", "suit": "Spades"},
-                     {"value": 4, "name": "four", "suit": "Spades"},
-                     {"value": 5, "name": "five", "suit": "Spades"},
-                     {"value": 6, "name": "six", "suit": "Spades"},
-                     {"value": 7, "name": "seven", "suit": "Spades"},
-                     {"value": 8, "name": "eight", "suit": "Spades"},
-                     {"value": 9, "name": "nine", "suit": "Spades"},
-                     {"value": 10, "name": "ten", "suit": "Spades"},
-                     {"value": 10, "name": "jack", "suit": "Spades"},
-                     {"value": 10, "name": "queen", "suit": "Spades"},
-                     {"value": 10, "name": "king", "suit": "Spades"},
-                     {"value": 11, "name": "ace", "suit": "Spades"},
+                     Card(2, "Spades"),
+                     Card(3, "Spades"),
+                     Card(4, "Spades"),
+                     Card(5, "Spades"),
+                     Card(6, "Spades"),
+                     Card(7, "Spades"),
+                     Card(8, "Spades"),
+                     Card(9, "Spades"),
+                     Card(10, "Spades"),
+                     Card(10, "Spades"),
+                     Card(10, "Spades"),
+                     Card(10, "Spades"),
+                     Card(11, "Spades"),
                      # hearts
-                     {"value": 2, "name": "two", "suit": "Hearts"},
-                     {"value": 3, "name": "three", "suit": "Hearts"},
-                     {"value": 4, "name": "four", "suit": "Hearts"},
-                     {"value": 5, "name": "five", "suit": "Hearts"},
-                     {"value": 6, "name": "six", "suit": "Hearts"},
-                     {"value": 7, "name": "seven", "suit": "Hearts"},
-                     {"value": 8, "name": "eight", "suit": "Hearts"},
-                     {"value": 9, "name": "nine", "suit": "Hearts"},
-                     {"value": 10, "name": "ten", "suit": "Hearts"},
-                     {"value": 10, "name": "jack", "suit": "Hearts"},
-                     {"value": 10, "name": "queen", "suit": "Hearts"},
-                     {"value": 10, "name": "king", "suit": "Hearts"},
-                     {"value": 11, "name": "ace", "suit": "Hearts"},
+                     Card(2, "Hearts"),
+                     Card(3, "Hearts"),
+                     Card(4, "Hearts"),
+                     Card(5, "Hearts"),
+                     Card(6, "Hearts"),
+                     Card(7, "Hearts"),
+                     Card(8, "Hearts"),
+                     Card(9, "Hearts"),
+                     Card(10, "Hearts"),
+                     Card(10, "Hearts"),
+                     Card(10, "Hearts"),
+                     Card(10, "Hearts"),
+                     Card(11, "Hearts"),
                      # diamonds
-                     {"value": 2, "name": "two", "suit": "Diamonds"},
-                     {"value": 3, "name": "three", "suit": "Diamonds"},
-                     {"value": 4, "name": "four", "suit": "Diamonds"},
-                     {"value": 5, "name": "five", "suit": "Diamonds"},
-                     {"value": 6, "name": "six", "suit": "Diamonds"},
-                     {"value": 7, "name": "seven", "suit": "Diamonds"},
-                     {"value": 8, "name": "eight", "suit": "Diamonds"},
-                     {"value": 9, "name": "nine", "suit": "Diamonds"},
-                     {"value": 10, "name": "ten", "suit": "Diamonds"},
-                     {"value": 10, "name": "jack", "suit": "Diamonds"},
-                     {"value": 10, "name": "queen", "suit": "Diamonds"},
-                     {"value": 10, "name": "king", "suit": "Diamonds"},
-                     {"value": 11, "name": "ace", "suit": "Diamonds"}]
-
+                     Card(2, "Diamonds"),
+                     Card(3, "Diamonds"),
+                     Card(4, "Diamonds"),
+                     Card(5, "Diamonds"),
+                     Card(6, "Diamonds"),
+                     Card(7, "Diamonds"),
+                     Card(8, "Diamonds"),
+                     Card(9, "Diamonds"),
+                     Card(10, "Diamonds"),
+                     Card(10, "Diamonds"),
+                     Card(10, "Diamonds"),
+                     Card(10, "Diamonds"),
+                     Card(11, "Diamonds")]
         self.shufleDeck()
 
-        def giveCard(self):
-            return self.deck.pop()
+    def giveCard(self):
+        return self.deck.pop()
 
-        def shufleDeck(slef):
-            random.shuffle(self.deck)
-
+    def shufleDeck(self):
+        copyDeck = self.deck.copy()
+        shuffledDeck = []
+        for i in range(len(copyDeck)):
+            randomNumber = rand.randrange(len(copyDeck))
+            shuffledDeck.append(copyDeck.pop(randomNumber))
+        self.deck = shuffledDeck
 
 # Bus divas apaksklases: House, Human
 
 
 class Player():
-    # Klasei vajadzetu propertijus, kur glabat kartis, karsu summu
-    def __init__(self, name, hand, handSum):
+    """
+    Klase speletajs, izveido speletaju ar vardu un roku, kur glabat iedotas kartis ka ari
+    naudu ar ko spelet.
+
+    Funkcijas: aprekinat roku un izprintet roku.
+
+    Speletajam uzreiz tiek aprekinata rokas summa.
+    """
+
+    def __init__(self, name, funds=100):
         self.name = name
-        self.hand = hand
-        self.handSum = handSum
+        self.hand = []
+        self.funds = funds
+        self.handSum = 0
 
     # Funkcijas varetu but aprekinat karsu summu
     def calculateHandSum(self):
-        for x in self.hand:
-            self.handSum += x
+        sum = 0
+        for i in self.hand:
+            sum += i.value
+        return sum
     # Uztaisism tuksu str funkciju
 
     def __str__(self) -> str:
-        string = "{} cards: ".format(self.name)
+        string = "{} hand | {} \n".format(self.name, self.calculateHandSum())
         for x in self.hand:
-            string += x + "\n"
+            string += str(x)
         return string
 # Mes sito dzeku kontrolesim
 
 
 class Human(Player):
-    def __init__(self, name, hand, handSum, funds, bet=0):
-        super().__init__(name, hand, handSum)
-        self.funds = funds
+    """
+    Klase cilveks ir apaksklase speletajam.
+
+    Pievienotas ipasibas ir speles likme, kas pec noklusejuma ir 0.
+
+    Pievienotas funkcijas ir likmes uzstadisana un izmaksa.
+    """
+
+    def __init__(self, name, funds=100, bet=0):
+        super().__init__(name, funds)
         self.bet = bet
 
-    def placeBet(self, amount):
-        self.funds -= amount
+    def placeBet(self):
+        self.funds -= self.bet
 
     def payout(self, payout):
         self.funds += payout
@@ -121,10 +212,19 @@ class Human(Player):
 
 
 class Dealer(Player):
-    def __init__(self, name, hand, handSum):
-        super().__init__(name, hand, handSum)
+    """
+    Klase dileris ir apaksklase speletajam
+
+    """
+
+    def __init__(self, name, hand):
+        super().__init__(name, hand)
 
     # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
 
     def __str__(self) -> str:
         return super().__str__()
+
+
+table = Table("Maris", "Dileris")
+print(table)
