@@ -4,10 +4,15 @@ import random as rand
 
 class Table():
 
+    """
+    Table klase vajadzetu but visiem noteikumiem
+    """
+
     def __init__(self, player, dealer):
         self.player = Human(player, [])
         self.dealer = Dealer(dealer, [])
         self.deck = Deck()
+        self.dealerMove = False
 
         self.deal_first_hand()
 
@@ -19,11 +24,16 @@ class Table():
 
     # Izprinteju galdu jeb kartis kas atrodas uz galda un speletaju rokas summu.
     def __str__(self):
-        string = ""
-        string += "{}".format(self.dealer)
-        string += "\n\n\n\n\n\n"
-        string += "{}".format(self.player)
-        return string
+        if self.dealerMove:
+            string = "{}".format(self.dealer)
+            string += "\n\n\n\n\n\n"
+            string += "{}".format(self.player)
+            return string
+        else:
+            string = "{}".format(self.dealer.first_hand_print())
+            string += "\n\n\n\n\n\n"
+            string += "{}".format(self.player)
+            return string
 
 
 class Card():
@@ -59,15 +69,14 @@ class Card():
                                           self.suit_unicode[self.suit])
             string += "\n|     |"
             string += "\n|     |"
-            string += "\n ----- "
+            string += "\n ----- \n"
         else:
             string = " ---- "
             string += "\n|{} {} |".format(self.value,
                                           self.suit_unicode[self.suit])
             string += "\n|    |"
             string += "\n|    |"
-            string += "\n ---- "
-
+            string += "\n ---- \n"
         return string
 
 
@@ -169,7 +178,6 @@ class Player():
         self.name = name
         self.hand = []
         self.funds = funds
-        self.handSum = 0
 
     # Funkcijas varetu but aprekinat karsu summu
     def calculateHandSum(self):
@@ -184,6 +192,15 @@ class Player():
         for x in self.hand:
             string += str(x)
         return string
+
+    def move(self):
+        playerInput = input("Hit - h | Stand - l\n")
+        if playerInput.lower() == "l":
+            return 0
+        elif playerInput.lower() == "h":
+            return 1
+
+
 # Mes sito dzeku kontrolesim
 
 
@@ -206,7 +223,11 @@ class Human(Player):
     def payout(self, payout):
         self.funds += payout
 
+    def move():
+        super().move()
+
     # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
+
     def __str__(self) -> str:
         return super().__str__()
 
@@ -225,6 +246,25 @@ class Dealer(Player):
     def __str__(self) -> str:
         return super().__str__()
 
+    def first_hand_print(self):
+        string = "{} hand | {} \n".format(
+            self.name, self.calculateHandSum() - self.hand[1].value)
+        for x in range(len(self.hand)-1):
+            string += str(self.hand[x])
+            if x < 1:
+                string += " ---- "
+                string += "\n|{}   |".format("X")
+                string += "\n|    |"
+                string += "\n|    |"
+                string += "\n ---- \n"
+        return string
 
-table = Table("Maris", "Dileris")
-print(table)
+
+# table = Table("Maris", "Dileris")
+# print(table)
+
+# player1 = Human("Maris")
+# player1.move()
+
+player2 = Player("Karlis")
+player2.move()
