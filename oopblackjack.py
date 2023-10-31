@@ -9,10 +9,11 @@ class Table():
     """
 
     def __init__(self, player, dealer):
-        self.player = Human(player, [])
-        self.dealer = Dealer(dealer, [])
+        self.player = Human(player)
+        self.dealer = Dealer(dealer)
         self.deck = Deck()
         self.dealerMove = False
+        self.moves = 0
 
         self.deal_first_hand()
 
@@ -22,7 +23,10 @@ class Table():
         self.player.hand.append(self.deck.giveCard())
         self.dealer.hand.append(self.deck.giveCard())
 
+        self.main()
     # Izprinteju galdu jeb kartis kas atrodas uz galda un speletaju rokas summu.
+
+    # Vajag ielikt if bloku kas apskatas vai dilerim printet abas kartis jo blackjack
     def __str__(self):
         if self.dealerMove:
             string = "{}".format(self.dealer)
@@ -34,6 +38,27 @@ class Table():
             string += "\n\n\n\n\n\n"
             string += "{}".format(self.player)
             return string
+
+    def main(self):
+        # Vajag ielikt funkciju kas parbauda vai dilerim nav blackjack
+        # No sakuma speletajs kustas
+        self.player.placeBet()
+        # Paskatamies vai vispar vajag nemt kartis
+        if (self.player.calculateHandSum() == 21):
+            self.dealerMove = True
+        # Ja speletajam ir zem 21 tas spele
+        while (self.dealerMove == False and self.player.calculateHandSum() < 21):
+            # !!!VAJAG PARBAUDIT KADI IR SPELETAJA IESPEJAMIE GAJIENI
+            print(self)
+            playerInput = self.player.move()
+            # Player stands
+            if (playerInput == 0):
+                self.dealerMove = True
+            # Player hits
+            elif (playerInput == 1):
+                self.player.hand.append(self.deck.giveCard())
+                self.moves += 1
+            # Player double down
 
 
 class Card():
@@ -92,62 +117,9 @@ class Deck():
     """
 
     def __init__(self):
-        # Velak varetu uztaisit karsu klasi - (Card)
-        self.deck = [Card(2, "Clubs"),
-                     Card(3, "Clubs"),
-                     Card(4, "Clubs"),
-                     Card(5, "Clubs"),
-                     Card(6, "Clubs"),
-                     Card(7, "Clubs"),
-                     Card(8, "Clubs"),
-                     Card(9, "Clubs"),
-                     Card(10, "Clubs"),
-                     Card(10, "Clubs"),
-                     Card(10, "Clubs"),
-                     Card(10, "Clubs"),
-                     Card(11, "Clubs"),
-                     # spades
-                     Card(2, "Spades"),
-                     Card(3, "Spades"),
-                     Card(4, "Spades"),
-                     Card(5, "Spades"),
-                     Card(6, "Spades"),
-                     Card(7, "Spades"),
-                     Card(8, "Spades"),
-                     Card(9, "Spades"),
-                     Card(10, "Spades"),
-                     Card(10, "Spades"),
-                     Card(10, "Spades"),
-                     Card(10, "Spades"),
-                     Card(11, "Spades"),
-                     # hearts
-                     Card(2, "Hearts"),
-                     Card(3, "Hearts"),
-                     Card(4, "Hearts"),
-                     Card(5, "Hearts"),
-                     Card(6, "Hearts"),
-                     Card(7, "Hearts"),
-                     Card(8, "Hearts"),
-                     Card(9, "Hearts"),
-                     Card(10, "Hearts"),
-                     Card(10, "Hearts"),
-                     Card(10, "Hearts"),
-                     Card(10, "Hearts"),
-                     Card(11, "Hearts"),
-                     # diamonds
-                     Card(2, "Diamonds"),
-                     Card(3, "Diamonds"),
-                     Card(4, "Diamonds"),
-                     Card(5, "Diamonds"),
-                     Card(6, "Diamonds"),
-                     Card(7, "Diamonds"),
-                     Card(8, "Diamonds"),
-                     Card(9, "Diamonds"),
-                     Card(10, "Diamonds"),
-                     Card(10, "Diamonds"),
-                     Card(10, "Diamonds"),
-                     Card(10, "Diamonds"),
-                     Card(11, "Diamonds")]
+
+        self.deck = [Card(value, suit) for value in range(2, 12)
+                     for suit in ["Clubs", "Spades", "Hearts", "Diamonds"]]
         self.shufleDeck()
 
     def giveCard(self):
@@ -160,6 +132,12 @@ class Deck():
             randomNumber = rand.randrange(len(copyDeck))
             shuffledDeck.append(copyDeck.pop(randomNumber))
         self.deck = shuffledDeck
+
+    def __str__(self) -> str:
+        string = ""
+        for x in self.deck:
+            string += str(x)
+        return string
 
 # Bus divas apaksklases: House, Human
 
@@ -185,21 +163,6 @@ class Player():
         for i in self.hand:
             sum += i.value
         return sum
-    # Uztaisism tuksu str funkciju
-
-    def __str__(self) -> str:
-        string = "{} hand | {} \n".format(self.name, self.calculateHandSum())
-        for x in self.hand:
-            string += str(x)
-        return string
-
-    def move(self):
-        playerInput = input("Hit - h | Stand - l\n")
-        if playerInput.lower() == "l":
-            return 0
-        elif playerInput.lower() == "h":
-            return 1
-
 
 # Mes sito dzeku kontrolesim
 
@@ -213,23 +176,69 @@ class Human(Player):
     Pievienotas funkcijas ir likmes uzstadisana un izmaksa.
     """
 
-    def __init__(self, name, funds=100, bet=0):
-        super().__init__(name, funds)
+    def __init__(self, name, bet=0):
+        super().__init__(name)
         self.bet = bet
 
     def placeBet(self):
-        self.funds -= self.bet
+        while (True):
+            print("You have {}$".format(str(self.funds)))
+            try:
+                playerInput = int(input("Place your bet\n"))
+            except:
+                print("Input just a number!")
+            else:
+                self.bet = playerInput
+                self.funds -= self.bet
+                break
 
     def payout(self, payout):
         self.funds += payout
 
-    def move():
-        super().move()
+    def checkForSplit(self):
+        if (self.hand[0].value == self.hand[1].value):
+            return True
+        else:
+            return False
+# Si funkcija illustres iespejamos gajienus speletajm
+# Vajag vel ielikt loopu ja nepareiz inputs tiek ievadits
+
+    def move(self, moves):
+        if (self.checkForSplit() and moves == 0):
+            playerInput = input(
+                "Hit - h | Stand - l| Split - s| Double down - d\n")
+            if playerInput.lower() == "l":
+                return 0
+            elif playerInput.lower() == "h":
+                return 1
+            elif playerInput.lower() == "s":
+                return 2
+            elif playerInput.lower() == "d":
+                return 3
+        elif (moves == 0):
+            playerInput = input(
+                "Hit - h | Stand - l| Double down - d\n")
+            if playerInput.lower() == "l":
+                return 0
+            elif playerInput.lower() == "h":
+                return 1
+            elif playerInput.lower() == "d":
+                return 3
+        else:
+            playerInput = input("Hit - h | Stand - l\n")
+            if playerInput.lower() == "l":
+                return 0
+            elif playerInput.lower() == "h":
+                return 1
 
     # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
 
     def __str__(self) -> str:
-        return super().__str__()
+        string = "{} Hand Sum - {} | Bet - {}\n".format(
+            self.name, self.calculateHandSum(), self.bet)
+        for x in self.hand:
+            string += str(x)
+        return string
 
 
 class Dealer(Player):
@@ -238,13 +247,17 @@ class Dealer(Player):
 
     """
 
-    def __init__(self, name, hand):
-        super().__init__(name, hand)
+    def __init__(self, name):
+        super().__init__(name)
 
     # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
 
     def __str__(self) -> str:
-        return super().__str__()
+        string = "{} Hand - {} Sum - {}\n".format(
+            self.name, self.calculateHandSum())
+        for x in self.hand:
+            string += str(x)
+        return string
 
     def first_hand_print(self):
         string = "{} hand | {} \n".format(
@@ -260,11 +273,5 @@ class Dealer(Player):
         return string
 
 
-# table = Table("Maris", "Dileris")
-# print(table)
-
-# player1 = Human("Maris")
-# player1.move()
-
-player2 = Player("Karlis")
-player2.move()
+deck = Deck()
+print(deck)
