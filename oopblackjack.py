@@ -5,8 +5,14 @@ import random as rand
 class Table():
 
     """
-    Table klase vajadzetu but visiem noteikumiem
+    Table klase bus vieta kur visas klases saies kopa.
+    Stradas ari kopa, piemeram, kavas klase stradas
+    kopa ar dileri un playeri. Ka ari protmas galvena
+    cilpa kur notiks visa speles seciba. Parbuadit
+    kurs ir uzvaretajs
     """
+    # inicializejam galdu kur parametri ir speletaja un dilera vardi
+    # Ipasibas ir Speletajs, Dileris un Kava kur ir ieksa kartis
 
     def __init__(self, player, dealer):
         self.player = Human(player)
@@ -14,21 +20,23 @@ class Table():
         self.deck = Deck()
         self.dealerMove = False
         self.moves = 0
+        self.input = 0
 
+        # Seit noteik speles seciba
         self.deal_first_hand()
+        self.main()
+        self.checkForWinner()
+    # izdalam kartis
 
     def deal_first_hand(self):
         self.player.hand.append(self.deck.giveCard())
         self.dealer.hand.append(self.deck.giveCard())
         self.player.hand.append(self.deck.giveCard())
         self.dealer.hand.append(self.deck.giveCard())
+    # izprintejam informaciju par speletajiem
 
-        self.main()
-    # Izprinteju galdu jeb kartis kas atrodas uz galda un speletaju rokas summu.
-
-    # Vajag ielikt if bloku kas apskatas vai dilerim printet abas kartis jo blackjack
     def __str__(self):
-        if self.dealerMove:
+        if (self.dealerMove or self.dealer.calculateHandSum() == 21):
             string = "{}".format(self.dealer)
             string += "\n\n\n\n\n\n"
             string += "{}".format(self.player)
@@ -38,9 +46,10 @@ class Table():
             string += "\n\n\n\n\n\n"
             string += "{}".format(self.player)
             return string
+    # galvena cilpa jeb speles solu seciba
 
     def main(self):
-        # Vajag ielikt funkciju kas parbauda vai dilerim nav blackjack
+
         # No sakuma speletajs kustas
         self.player.placeBet()
         # Paskatamies vai vispar vajag nemt kartis
@@ -49,8 +58,9 @@ class Table():
         # Ja speletajam ir zem 21 tas spele
         while (self.dealerMove == False and self.player.calculateHandSum() < 21):
             # !!!VAJAG PARBAUDIT KADI IR SPELETAJA IESPEJAMIE GAJIENI
+            # Ta lai tas nevar ievadit splitu, kad tas nemaz nevar splitot
             print(self)
-            playerInput = self.player.move()
+            playerInput = self.player.move(self.moves)
             # Player stands
             if (playerInput == 0):
                 self.dealerMove = True
@@ -58,7 +68,39 @@ class Table():
             elif (playerInput == 1):
                 self.player.hand.append(self.deck.giveCard())
                 self.moves += 1
-            # Player double down
+            # Player split
+            elif (playerInput == 2):
+                pass
+            # Double down
+            elif (playerInput == 3):
+                pass
+        # Seit dileris kustas
+        """
+        Seit mes skatamies vai nav vienads ar 21, lai parliecinatos, ka
+        nav blackjack. Tadejadi mums nevajadzes lieki veikt 1 iteraciju
+        """
+        while (self.dealerMove and self.dealer.calculateHandSum() != 21):
+            # Ja ir janem karti
+            if (self.dealer.move() == True):
+                # Tas nems karti
+                self.dealer.hand.append(self.deck.giveCard())
+                print(self)
+            else:
+                # Preteji tas beigs gajienu
+                self.dealerMove = False
+    # parbaudam kurs uzvareja speli
+
+    # JAPAPILDINA AR VEL UZVARAS KONDICIJAM
+    def checkForWinner(self):
+        # Man neintrese vai dilerim ir blackjacks
+        # Man tikai intrese dilera karsu summa
+        # Seit mes skatamies vai speletajam ir blackjacks
+        # un dilerim 21
+        print(self)
+        if (self.moves == 0 and self.player == 21 and self.dealer == 21):
+            print("No one wins!")
+        elif (self.moves == 0 and self.player == 21):
+            print("Player got BLACKJACK! - {}")
 
 
 class Card():
@@ -272,6 +314,10 @@ class Dealer(Player):
                 string += "\n ---- \n"
         return string
 
+    def move(self):
+        if (self.calculateHandSum() < 17 and Human.calculateHandSum() > self.calculateHandSum()):
+            return True
+        return False
 
-deck = Deck()
-print(deck)
+
+table = Table("Maris", "Dileris")
