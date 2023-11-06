@@ -21,6 +21,7 @@ class Table():
         self.dealerMove = False
         self.moves = 0
         self.input = 0
+        self.splitDeck = []
 
         # Seit noteik speles seciba
         self.deal_first_hand()
@@ -52,11 +53,13 @@ class Table():
 
         # No sakuma speletajs kustas
         self.player.placeBet()
-        # Paskatamies vai vispar vajag nemt kartis
-        if (self.player.calculateHandSum() == 21):
-            self.dealerMove = True
+
         # Ja speletajam ir zem 21 tas spele
         while (self.dealerMove == False and self.player.calculateHandSum() < 21):
+            # Paskatamies vai vispar vajag nemt kartis
+            if (self.player.calculateHandSum() >= 21):
+                self.dealerMove = True
+            print(self.moves)
             # !!!VAJAG PARBAUDIT KADI IR SPELETAJA IESPEJAMIE GAJIENI
             # Ta lai tas nevar ievadit splitu, kad tas nemaz nevar splitot
             print(self)
@@ -72,8 +75,16 @@ class Table():
             elif (playerInput == 2):
                 pass
             # Double down
-            elif (playerInput == 3):
-                pass
+            elif (playerInput == 3 and self.moves == 0):
+                if (self.player.funds - self.player.bet >= 0):
+                    self.player.hand.append(self.deck.giveCard())
+                    self.moves += 1
+                    self.dealerMove = True
+                else:
+                    print("You don't have enough money")
+                    print("Your balance - {}$".format(self.player.funds))
+            else:
+                print("Input a valid move!")
         # Seit dileris kustas
         """
         Seit mes skatamies vai nav vienads ar 21, lai parliecinatos, ka
@@ -81,13 +92,14 @@ class Table():
         """
         while (self.dealerMove and self.dealer.calculateHandSum() != 21):
             # Ja ir janem karti
-            if (self.dealer.move() == True):
+            if (self.dealer.move(self.player) == True):
                 # Tas nems karti
                 self.dealer.hand.append(self.deck.giveCard())
                 print(self)
             else:
                 # Preteji tas beigs gajienu
-                self.dealerMove = False
+                break
+
     # parbaudam kurs uzvareja speli
 
     # JAPAPILDINA AR VEL UZVARAS KONDICIJAM
@@ -101,6 +113,9 @@ class Table():
             print("No one wins!")
         elif (self.moves == 0 and self.player == 21):
             print("Player got BLACKJACK! - {}")
+
+    def resetAll(self):
+        pass
 
 
 class Card():
@@ -295,7 +310,7 @@ class Dealer(Player):
     # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
 
     def __str__(self) -> str:
-        string = "{} Hand - {} Sum - {}\n".format(
+        string = "{} Hand | Sum - {}\n".format(
             self.name, self.calculateHandSum())
         for x in self.hand:
             string += str(x)
@@ -314,8 +329,8 @@ class Dealer(Player):
                 string += "\n ---- \n"
         return string
 
-    def move(self):
-        if (self.calculateHandSum() < 17 and Human.calculateHandSum() > self.calculateHandSum()):
+    def move(self, playerHand):
+        if (self.calculateHandSum() < 17 and playerHand.calculateHandSum() > self.calculateHandSum()):
             return True
         return False
 
