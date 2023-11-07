@@ -20,8 +20,7 @@ class Table():
         self.deck = Deck()
         self.dealerMove = False
         self.moves = 0
-        self.input = 0
-        self.splitDeck = []
+        self.split = False
 
         # Seit noteik speles seciba
         self.deal_first_hand()
@@ -37,16 +36,29 @@ class Table():
     # izprintejam informaciju par speletajiem
 
     def __str__(self):
-        if (self.dealerMove or self.dealer.calculateHandSum() == 21):
-            string = "{}".format(self.dealer)
-            string += "\n\n\n\n\n\n"
-            string += "{}".format(self.player)
-            return string
+        if (self.split == False):
+            if (self.dealerMove or self.dealer.calculateHandSum() == 21):
+                string = "{}".format(self.dealer)
+                string += "\n\n\n\n\n\n"
+                string += "{}".format(self.player)
+                return string
+            else:
+                string = "{}".format(self.dealer.first_hand_print())
+                string += "\n\n\n\n\n\n"
+                string += "{}".format(self.player)
+                return string
         else:
-            string = "{}".format(self.dealer.first_hand_print())
-            string += "\n\n\n\n\n\n"
-            string += "{}".format(self.player)
-            return string
+            if (self.dealerMove or self.dealer.calculateHandSum() == 21):
+                # if dealer has 21 it prints its whole hand
+                string = "{}".format(self.dealer)
+                string += "\n\n\n\n\n\n"
+                string += "{}".format(self.player.split_print())
+                return string
+            else:
+                string = "{}".format(self.dealer.first_hand_print())
+                string += "\n\n\n\n\n\n"
+                string += "{}".format(self.player.split_print())
+                return string
     # galvena cilpa jeb speles solu seciba
 
     def main(self):
@@ -72,8 +84,23 @@ class Table():
                 self.player.hand.append(self.deck.giveCard())
                 self.moves += 1
             # Player split
-            elif (playerInput == 2):
+            elif (playerInput == 2 and self.player.hand[0].value == self.player.hand[0].value and self.moves == 0):
+                # parbaudam vai pieteik nauda lai vispar veiktu split
+                if (self.player.funds - self.player.bet >= 0):
+                    self.split = True
+                    # iedodam split deckam karti
+                    self.player.splitDeck.append(self.player.hand[1])
+                    # Nonemam no orginala decka karti
+                    self.player.hand.pop()
+                    # izprintejam decku
+                    print(self)
+
+                else:
+                    print("You don't have enough money")
+                    print("Your balance - {}$".format(self.player.funds))
+
                 pass
+
             # Double down
             elif (playerInput == 3 and self.moves == 0):
                 if (self.player.funds - self.player.bet >= 0):
@@ -174,7 +201,7 @@ class Deck():
     """
 
     def __init__(self):
-
+        # I should add a symbol for kings, queens, aces and jacks
         self.deck = [Card(value, suit) for value in range(2, 12)
                      for suit in ["Clubs", "Spades", "Hearts", "Diamonds"]]
         self.shufleDeck()
@@ -236,6 +263,7 @@ class Human(Player):
     def __init__(self, name, bet=0):
         super().__init__(name)
         self.bet = bet
+        self.splitDeck = []
 
     def placeBet(self):
         while (True):
@@ -289,6 +317,11 @@ class Human(Player):
                 return 1
 
     # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
+    def calculateSplitDeck(self):
+        sum = 0
+        for x in self.splitDeck:
+            sum += x
+        return sum
 
     def __str__(self) -> str:
         string = "{} Hand Sum - {} | Bet - {}\n".format(
@@ -296,6 +329,11 @@ class Human(Player):
         for x in self.hand:
             string += str(x)
         return string
+
+    def split_print(self):
+        string = "Hand 1 SUM - {} \t\tHand 2 SUM - {}\n".format(
+            self.calculateHandSum(), self.calculateSplitDeck())
+        string += ""
 
 
 class Dealer(Player):
