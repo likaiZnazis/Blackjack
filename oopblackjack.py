@@ -1,6 +1,15 @@
 import random as rand
 # Ta pati deja cits stils
 
+#TODO
+"""
+1. Kartim vajag: Karali, Damu, Piki, Duzi. Japieliek velviena ipasiba = name
+2. Sacinit splitu
+3. Edge case, kad pirmas kartis abas ir ace
+4. Winning conditions
+
+
+"""
 
 class Table():
 
@@ -64,6 +73,7 @@ class Table():
     def main(self):
 
         # No sakuma speletajs kustas
+        #uzliek naudu
         self.player.placeBet()
 
         # Ja speletajam ir zem 21 tas spele
@@ -94,7 +104,6 @@ class Table():
                     self.player.hand.pop()
                     # izprintejam decku
                     print(self)
-
                 else:
                     print("You don't have enough money")
                     print("Your balance - {}$".format(self.player.funds))
@@ -171,23 +180,6 @@ class Card():
         self.value = value
         self.suit = suit
 
-    def __str__(self):
-        if self.value > 9:
-            string = " ----- "
-            string += "\n|{} {} |".format(self.value,
-                                          self.suit_unicode[self.suit])
-            string += "\n|     |"
-            string += "\n|     |"
-            string += "\n ----- \n"
-        else:
-            string = " ---- "
-            string += "\n|{} {} |".format(self.value,
-                                          self.suit_unicode[self.suit])
-            string += "\n|    |"
-            string += "\n|    |"
-            string += "\n ---- \n"
-        return string
-
 
 class Deck():
 
@@ -220,8 +212,9 @@ class Deck():
     def __str__(self) -> str:
         string = ""
         for x in self.deck:
-            string += str(x)
-        return string
+            string += str
+        return ""
+        
 
 # Bus divas apaksklases: House, Human
 
@@ -247,6 +240,33 @@ class Player():
         for i in self.hand:
             sum += i.value
         return sum
+    
+    def printLineDown(self):
+        string = ""
+        for i in range(len(self.hand)):
+            string += " ----- "
+        return string
+
+    def printStraightLine(self):
+        string = ""
+        for i in range(len(self.hand)):
+            string += "|     |"
+        return string
+    
+    def __str__(self) -> str:
+        
+        string = ("{} Hand Sum - {} | Bet - {}\n".format(
+            self.name, self.calculateHandSum(), self.bet)) 
+        string += self.printLineDown() + "\n"
+        for i in self.hand:
+            if (i.value > 9):
+                string += str(("|{}/{} |".format(i.value, i.suit_unicode[i.suit])))
+            else:
+                string += str(("|{}/{}  |".format(i.value, i.suit_unicode[i.suit])))
+        string += "\n" + self.printStraightLine()
+        string += "\n" + self.printStraightLine() + "\n"
+        string += self.printLineDown()
+        return string
 
 # Mes sito dzeku kontrolesim
 
@@ -323,18 +343,13 @@ class Human(Player):
             sum += x
         return sum
 
-    def __str__(self) -> str:
-        string = "{} Hand Sum - {} | Bet - {}\n".format(
-            self.name, self.calculateHandSum(), self.bet)
-        for x in self.hand:
-            string += str(x)
-        return string
-
     def split_print(self):
         string = "Hand 1 SUM - {} \t\tHand 2 SUM - {}\n".format(
             self.calculateHandSum(), self.calculateSplitDeck())
         string += ""
 
+    def __str__(self) -> str:
+        return super().__str__()
 
 class Dealer(Player):
     """
@@ -348,23 +363,22 @@ class Dealer(Player):
     # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
 
     def __str__(self) -> str:
-        string = "{} Hand | Sum - {}\n".format(
-            self.name, self.calculateHandSum())
-        for x in self.hand:
-            string += str(x)
-        return string
+        return super().__str__()
 
     def first_hand_print(self):
         string = "{} hand | {} \n".format(
             self.name, self.calculateHandSum() - self.hand[1].value)
-        for x in range(len(self.hand)-1):
-            string += str(self.hand[x])
-            if x < 1:
-                string += " ---- "
-                string += "\n|{}   |".format("X")
-                string += "\n|    |"
-                string += "\n|    |"
-                string += "\n ---- \n"
+        string += self.printLineDown() + "\n"
+        for i in self.hand:
+            if (i.value > 9):
+                string += str(("|{}/{} |".format(i.value, i.suit_unicode[i.suit])))
+            else:
+                string += str(("|{}/{}  |".format(i.value, i.suit_unicode[i.suit])))
+            string += str(("|{}/{}  |".format("x", "?")))
+            string += "\n" + self.printStraightLine()
+            string += "\n" + self.printStraightLine() + "\n"
+            string += self.printLineDown()
+            break
         return string
 
     def move(self, playerHand):
