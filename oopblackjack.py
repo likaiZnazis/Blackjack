@@ -1,14 +1,14 @@
 import random as rand
 # Ta pati deja cits stils
 
+# Errors ir tads ka man nav while loops ielikts, sanak es ievadu ka gribu splitot, tas sasplito kartis, un pec tam atkal jauta vai grib splitot
+# pat tad kad tas ir sasplitojis, tapec met erroru ka ir index out of range. RISINAJUMS - vajag ielikt ieksa while loop, kas jauta vai hitot
+# 1 roku un pec tam otro roku.
 #TODO
 """
-1. Kartim vajag: Karali, Damu, Piki, Duzi. Japieliek velviena ipasiba = name
-2. Sacinit splitu
+2. salabot split printu, split hit
 3. Edge case, kad pirmas kartis abas ir ace
 4. Winning conditions
-
-
 """
 
 class Table():
@@ -81,10 +81,10 @@ class Table():
             # Paskatamies vai vispar vajag nemt kartis
             if (self.player.calculateHandSum() >= 21):
                 self.dealerMove = True
-            print(self.moves)
             # !!!VAJAG PARBAUDIT KADI IR SPELETAJA IESPEJAMIE GAJIENI
             # Ta lai tas nevar ievadit splitu, kad tas nemaz nevar splitot
             print(self)
+            print(len(self.player.hand))
             playerInput = self.player.move(self.moves)
             # Player stands
             if (playerInput == 0):
@@ -94,16 +94,19 @@ class Table():
                 self.player.hand.append(self.deck.giveCard())
                 self.moves += 1
             # Player split
-            elif (playerInput == 2 and self.player.hand[0].value == self.player.hand[0].value and self.moves == 0):
+            elif (playerInput == 2 and self.player.hand[0].value == self.player.hand[1].value and self.moves == 0):
+                self.split = True
                 # parbaudam vai pieteik nauda lai vispar veiktu split
                 if (self.player.funds - self.player.bet >= 0):
-                    self.split = True
                     # iedodam split deckam karti
-                    self.player.splitDeck.append(self.player.hand[1])
+                    self.player.splitHand.append(self.player.hand[1])
                     # Nonemam no orginala decka karti
                     self.player.hand.pop()
                     # izprintejam decku
-                    print(self)
+                    while(self.split == True):
+                        print(self)
+                        self.split = False
+                        break
                 else:
                     print("You don't have enough money")
                     print("Your balance - {}$".format(self.player.funds))
@@ -176,9 +179,10 @@ class Card():
         "Clubs": "\u2663"
     }
 
-    def __init__(self, value, suit):
+    def __init__(self, value, suit, name):
         self.value = value
         self.suit = suit
+        self.name = name
 
 
 class Deck():
@@ -194,8 +198,37 @@ class Deck():
 
     def __init__(self):
         # I should add a symbol for kings, queens, aces and jacks
-        self.deck = [Card(value, suit) for value in range(2, 12)
-                     for suit in ["Clubs", "Spades", "Hearts", "Diamonds"]]
+        self.deck = []
+        for value in range(2, 17):
+            for suit in ["Clubs", "Spades", "Hearts", "Diamonds"]:
+                if value == 2:
+                    self.deck.append(Card(value, suit, "two"))
+                elif value == 3:
+                    self.deck.append(Card(value, suit, "three"))
+                elif value == 4:
+                    self.deck.append(Card(value, suit, "four"))
+                elif value == 5:
+                    self.deck.append(Card(value, suit, "five"))
+                elif value == 6:
+                    self.deck.append(Card(value, suit, "six"))
+                elif value == 7:
+                    self.deck.append(Card(value, suit, "seven"))
+                elif value == 8:
+                    self.deck.append(Card(value, suit, "eight"))
+                elif value == 9:
+                    self.deck.append(Card(value, suit, "nine"))
+                elif value == 10:
+                    self.deck.append(Card(value, suit, "ten"))
+                elif value == 11:
+                    self.deck.append(Card(10, suit, "jack"))
+                elif value == 12:
+                    self.deck.append(Card(10, suit, "queen"))
+                elif value == 13:
+                    self.deck.append(Card(10, suit, "king"))
+                elif value == 14:
+                    self.deck.append(Card(11, suit, "ace"))
+                else:
+                    pass
         self.shufleDeck()
 
     def giveCard(self):
@@ -208,12 +241,6 @@ class Deck():
             randomNumber = rand.randrange(len(copyDeck))
             shuffledDeck.append(copyDeck.pop(randomNumber))
         self.deck = shuffledDeck
-
-    def __str__(self) -> str:
-        string = ""
-        for x in self.deck:
-            string += str
-        return ""
         
 
 # Bus divas apaksklases: House, Human
@@ -253,16 +280,29 @@ class Player():
             string += "|     |"
         return string
     
+    def printSymbol(self, i):
+        string = ""
+        if (i.value > 10):
+            if (i.name == "jack"):
+                string += str(("|{}/{} |".format("J", i.suit_unicode[i.suit])))
+            elif (i.value == "queen"):
+                string += str(("|{}/{} |".format("Q", i.suit_unicode[i.suit])))
+            elif (i.value == "king"):
+                string += str(("|{}/{} |".format("K", i.suit_unicode[i.suit])))  
+            elif (i.value == "ace"):
+                string += str(("|{}/{} |".format("A", i.suit_unicode[i.suit])))
+            else:
+                string += str(("|{}/{} |".format(i.value, i.suit_unicode[i.suit])))
+        else:
+            string += str(("|{}/{}  |".format(i.value, i.suit_unicode[i.suit])))
+        return string
+
     def __str__(self) -> str:
-        
         string = ("{} Hand Sum - {} | Bet - {}\n".format(
             self.name, self.calculateHandSum(), self.bet)) 
         string += self.printLineDown() + "\n"
         for i in self.hand:
-            if (i.value > 9):
-                string += str(("|{}/{} |".format(i.value, i.suit_unicode[i.suit])))
-            else:
-                string += str(("|{}/{}  |".format(i.value, i.suit_unicode[i.suit])))
+            string  += self.printSymbol(i)
         string += "\n" + self.printStraightLine()
         string += "\n" + self.printStraightLine() + "\n"
         string += self.printLineDown()
@@ -283,7 +323,7 @@ class Human(Player):
     def __init__(self, name, bet=0):
         super().__init__(name)
         self.bet = bet
-        self.splitDeck = []
+        self.splitHand = []
 
     def placeBet(self):
         while (True):
@@ -337,16 +377,19 @@ class Human(Player):
                 return 1
 
     # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
-    def calculateSplitDeck(self):
+    def calculatesplitHand(self):
         sum = 0
-        for x in self.splitDeck:
-            sum += x
+        for x in self.splitHand:
+            sum += x.value
         return sum
 
     def split_print(self):
         string = "Hand 1 SUM - {} \t\tHand 2 SUM - {}\n".format(
-            self.calculateHandSum(), self.calculateSplitDeck())
+            self.calculateHandSum(), self.calculatesplitHand())
         string += ""
+        #for cards in len(self.hand) + len(self.splitHand):
+            
+        return string
 
     def __str__(self) -> str:
         return super().__str__()
@@ -363,7 +406,18 @@ class Dealer(Player):
     # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
 
     def __str__(self) -> str:
-        return super().__str__()
+        string = ("{} Hand Sum - {} |\n".format(
+        self.name, self.calculateHandSum())) 
+        string += self.printLineDown() + "\n"
+        for i in self.hand:
+            if (i.value > 9):
+                string += str(("|{}/{} |".format(i.value, i.suit_unicode[i.suit])))
+            else:
+                string += str(("|{}/{}  |".format(i.value, i.suit_unicode[i.suit])))
+        string += "\n" + self.printStraightLine()
+        string += "\n" + self.printStraightLine() + "\n"
+        string += self.printLineDown()
+        return string
 
     def first_hand_print(self):
         string = "{} hand | {} \n".format(
