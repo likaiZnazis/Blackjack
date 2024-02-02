@@ -46,7 +46,7 @@ class Table():
 
     def __str__(self):
         if (self.split == False):
-            if (self.dealerMove or self.dealer.calculateHandSum() == 21):
+            if (self.dealerMove or self.dealer.calculateHandSum(self.dealer.hand) == 21):
                 string = "{}".format(self.dealer)
                 string += "\n\n\n\n\n\n"
                 string += "{}".format(self.player)
@@ -57,7 +57,7 @@ class Table():
                 string += "{}".format(self.player)
                 return string
         else:
-            if (self.dealerMove or self.dealer.calculateHandSum() == 21):
+            if (self.dealerMove or self.dealer.calculateHandSum(self.dealer.hand) == 21):
                 # if dealer has 21 it prints its whole hand
                 string = "{}".format(self.dealer)
                 string += "\n\n\n\n\n\n"
@@ -77,9 +77,9 @@ class Table():
         self.player.placeBet()
 
         # Ja speletajam ir zem 21 tas spele
-        while (self.dealerMove == False and self.player.calculateHandSum() < 21):
+        while (self.dealerMove == False and self.player.calculateHandSum(self.player.hand) < 21):
             # Paskatamies vai vispar vajag nemt kartis
-            if (self.player.calculateHandSum() >= 21):
+            if (self.player.calculateHandSum(self.player.hand) >= 21):
                 self.dealerMove = True
             # !!!VAJAG PARBAUDIT KADI IR SPELETAJA IESPEJAMIE GAJIENI
             # Ta lai tas nevar ievadit splitu, kad tas nemaz nevar splitot
@@ -129,7 +129,7 @@ class Table():
         Seit mes skatamies vai nav vienads ar 21, lai parliecinatos, ka
         nav blackjack. Tadejadi mums nevajadzes lieki veikt 1 iteraciju
         """
-        while (self.dealerMove and self.dealer.calculateHandSum() != 21):
+        while (self.dealerMove and self.dealer.calculateHandSum(self.dealer.hand) != 21):
             # Ja ir janem karti
             if (self.dealer.move(self.player) == True):
                 # Tas nems karti
@@ -243,9 +243,6 @@ class Deck():
         self.deck = shuffledDeck
         
 
-# Bus divas apaksklases: House, Human
-
-
 class Player():
     """
     Klase speletajs, izveido speletaju ar vardu un roku, kur glabat iedotas kartis ka ari
@@ -255,16 +252,16 @@ class Player():
 
     Speletajam uzreiz tiek aprekinata rokas summa.
     """
-
+    
     def __init__(self, name, funds=100):
         self.name = name
         self.hand = []
         self.funds = funds
 
     # Funkcijas varetu but aprekinat karsu summu
-    def calculateHandSum(self):
+    def calculateHandSum(self, hand):
         sum = 0
-        for i in self.hand:
+        for i in hand:
             sum += i.value
         return sum
     
@@ -282,7 +279,7 @@ class Player():
     
     def printSymbol(self, i):
         string = ""
-        if (i.value > 10):
+        if (i.value > 9):
             if (i.name == "jack"):
                 string += str(("|{}/{} |".format("J", i.suit_unicode[i.suit])))
             elif (i.value == "queen"):
@@ -299,7 +296,7 @@ class Player():
 
     def __str__(self) -> str:
         string = ("{} Hand Sum - {} | Bet - {}\n".format(
-            self.name, self.calculateHandSum(), self.bet)) 
+            self.name, self.calculateHandSum(self.hand), self.bet)) 
         string += self.printLineDown() + "\n"
         for i in self.hand:
             string  += self.printSymbol(i)
@@ -319,12 +316,12 @@ class Human(Player):
 
     Pievienotas funkcijas ir likmes uzstadisana un izmaksa.
     """
-
+    #same as dealer only has bet and split hand
     def __init__(self, name, bet=0):
         super().__init__(name)
         self.bet = bet
         self.splitHand = []
-
+    #places a bet
     def placeBet(self):
         while (True):
             print("You have {}$".format(str(self.funds)))
@@ -336,18 +333,16 @@ class Human(Player):
                 self.bet = playerInput
                 self.funds -= self.bet
                 break
-
+    #gives player money
     def payout(self, payout):
         self.funds += payout
-
+    #checks if player has split
     def checkForSplit(self):
         if (self.hand[0].value == self.hand[1].value):
             return True
         else:
             return False
-# Si funkcija illustres iespejamos gajienus speletajm
-# Vajag vel ielikt loopu ja nepareiz inputs tiek ievadits
-
+    #all the possible moves for player, moves are checked in the main function
     def move(self, moves):
         if (self.checkForSplit() and moves == 0):
             playerInput = input(
@@ -376,67 +371,53 @@ class Human(Player):
             elif playerInput.lower() == "h":
                 return 1
 
-    # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
-    def calculatesplitHand(self):
-        sum = 0
-        for x in self.splitHand:
-            sum += x.value
-        return sum
-
+    #prints cards if input is split
     def split_print(self):
         string = "Hand 1 SUM - {} \t\tHand 2 SUM - {}\n".format(
-            self.calculateHandSum(), self.calculatesplitHand())
+            self.calculateHandSum(self.hand), self.calculateHandSum(self.splitHand))
         string += ""
-        #for cards in len(self.hand) + len(self.splitHand):
-            
+        # for cards in len(self.hand) + len(self.splitHand):
+        #     string += 
         return string
-
+    #prints cards
     def __str__(self) -> str:
         return super().__str__()
 
 class Dealer(Player):
     """
     Klase dileris ir apaksklase speletajam
-
     """
-
+    #Has the same properties as player class 
     def __init__(self, name):
         super().__init__(name)
 
-    # sito velak bus jaizmaina! Paslaik vajag, lai saprotu ka suds strada
-
+    #pirnts cards
     def __str__(self) -> str:
         string = ("{} Hand Sum - {} |\n".format(
-        self.name, self.calculateHandSum())) 
+        self.name, self.calculateHandSum(self.hand))) 
         string += self.printLineDown() + "\n"
         for i in self.hand:
-            if (i.value > 9):
-                string += str(("|{}/{} |".format(i.value, i.suit_unicode[i.suit])))
-            else:
-                string += str(("|{}/{}  |".format(i.value, i.suit_unicode[i.suit])))
+            string  += self.printSymbol(i)
         string += "\n" + self.printStraightLine()
         string += "\n" + self.printStraightLine() + "\n"
         string += self.printLineDown()
         return string
-
+    #prints cards but hides the second one
     def first_hand_print(self):
         string = "{} hand | {} \n".format(
-            self.name, self.calculateHandSum() - self.hand[1].value)
+            self.name, self.calculateHandSum(self.hand) - self.hand[1].value)
         string += self.printLineDown() + "\n"
         for i in self.hand:
-            if (i.value > 9):
-                string += str(("|{}/{} |".format(i.value, i.suit_unicode[i.suit])))
-            else:
-                string += str(("|{}/{}  |".format(i.value, i.suit_unicode[i.suit])))
+            string  += self.printSymbol(i)
             string += str(("|{}/{}  |".format("x", "?")))
             string += "\n" + self.printStraightLine()
             string += "\n" + self.printStraightLine() + "\n"
             string += self.printLineDown()
             break
         return string
-
+    #makes move based on player hand
     def move(self, playerHand):
-        if (self.calculateHandSum() < 17 and playerHand.calculateHandSum() > self.calculateHandSum()):
+        if (self.calculateHandSum(self.hand) < 17 and playerHand.calculateHandSum(playerHand.hand) > self.calculateHandSum(self.hand)):
             return True
         return False
 
