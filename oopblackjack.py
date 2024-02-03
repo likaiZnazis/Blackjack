@@ -6,6 +6,7 @@ import random as rand
 # 1 roku un pec tam otro roku.
 #TODO
 """
+1. Ace vertiba var but 1/11
 2. salabot split printu, split hit
 3. Edge case, kad pirmas kartis abas ir ace
 4. Winning conditions
@@ -85,7 +86,7 @@ class Table():
             # Ta lai tas nevar ievadit splitu, kad tas nemaz nevar splitot
             print(self)
             print(len(self.player.hand))
-            playerInput = self.player.move(self.moves)
+            playerInput = self.player.move(self.moves, self.split)
             # Player stands
             if (playerInput == 0):
                 self.dealerMove = True
@@ -94,7 +95,7 @@ class Table():
                 self.player.hand.append(self.deck.giveCard())
                 self.moves += 1
             # Player split
-            elif (playerInput == 2 and self.player.hand[0].value == self.player.hand[1].value and self.moves == 0):
+            elif (playerInput == 2 and self.player.hand[0].name == self.player.hand[1].name and self.moves == 0):
                 self.split = True
                 # parbaudam vai pieteik nauda lai vispar veiktu split
                 if (self.player.funds - self.player.bet >= 0):
@@ -105,8 +106,9 @@ class Table():
                     # izprintejam decku
                     while(self.split == True):
                         print(self)
-                        self.split = False
-                        break
+                        playerInput = self.player.move(self.moves,self.split)
+                        if (playerInput == 0):
+                            
                 else:
                     print("You don't have enough money")
                     print("Your balance - {}$".format(self.player.funds))
@@ -152,7 +154,7 @@ class Table():
             print("No one wins!")
         elif (self.moves == 0 and self.player == 21):
             print("Player got BLACKJACK! - {}")
-
+    # Resests the deck if cards are below 10
     def resetAll(self):
         pass
 
@@ -258,22 +260,27 @@ class Player():
         self.hand = []
         self.funds = funds
 
-    # Funkcijas varetu but aprekinat karsu summu
-    def calculateHandSum(self, hand):
+    # This function does not have self thus it is static.
+    # Didnt give it self because there is a split condition.
+    # Don't want to create a new function just for split hand.
+    @staticmethod
+    def calculateHandSum(hand):
         sum = 0
         for i in hand:
             sum += i.value
         return sum
     
-    def printLineDown(self):
+    @staticmethod
+    def printLineDown(hand):
         string = ""
-        for i in range(len(self.hand)):
+        for _ in range(len(hand)):
             string += " ----- "
         return string
-
-    def printStraightLine(self):
+    
+    @staticmethod
+    def printStraightLine(hand):
         string = ""
-        for i in range(len(self.hand)):
+        for _ in range(len(hand)):
             string += "|     |"
         return string
     
@@ -281,13 +288,13 @@ class Player():
         string = ""
         if (i.value > 9):
             if (i.name == "jack"):
-                string += str(("|{}/{} |".format("J", i.suit_unicode[i.suit])))
-            elif (i.value == "queen"):
-                string += str(("|{}/{} |".format("Q", i.suit_unicode[i.suit])))
-            elif (i.value == "king"):
-                string += str(("|{}/{} |".format("K", i.suit_unicode[i.suit])))  
-            elif (i.value == "ace"):
-                string += str(("|{}/{} |".format("A", i.suit_unicode[i.suit])))
+                string += str(("|{}/{}  |".format("J", i.suit_unicode[i.suit])))
+            elif (i.name == "queen"):
+                string += str(("|{}/{}  |".format("Q", i.suit_unicode[i.suit])))
+            elif (i.name == "king"):
+                string += str(("|{}/{}  |".format("K", i.suit_unicode[i.suit])))  
+            elif (i.name == "ace"):
+                string += str(("|{}/{}  |".format("A", i.suit_unicode[i.suit])))
             else:
                 string += str(("|{}/{} |".format(i.value, i.suit_unicode[i.suit])))
         else:
@@ -297,12 +304,12 @@ class Player():
     def __str__(self) -> str:
         string = ("{} Hand Sum - {} | Bet - {}\n".format(
             self.name, self.calculateHandSum(self.hand), self.bet)) 
-        string += self.printLineDown() + "\n"
+        string += self.printLineDown(self.hand) + "\n"
         for i in self.hand:
             string  += self.printSymbol(i)
-        string += "\n" + self.printStraightLine()
-        string += "\n" + self.printStraightLine() + "\n"
-        string += self.printLineDown()
+        string += "\n" + self.printStraightLine(self.hand)
+        string += "\n" + self.printStraightLine(self.hand) + "\n"
+        string += self.printLineDown(self.hand)
         return string
 
 # Mes sito dzeku kontrolesim
@@ -338,46 +345,74 @@ class Human(Player):
         self.funds += payout
     #checks if player has split
     def checkForSplit(self):
-        if (self.hand[0].value == self.hand[1].value):
+        if (self.hand[0].name == self.hand[1].name):
             return True
         else:
             return False
     #all the possible moves for player, moves are checked in the main function
-    def move(self, moves):
-        if (self.checkForSplit() and moves == 0):
-            playerInput = input(
-                "Hit - h | Stand - l| Split - s| Double down - d\n")
-            if playerInput.lower() == "l":
-                return 0
-            elif playerInput.lower() == "h":
-                return 1
-            elif playerInput.lower() == "s":
-                return 2
-            elif playerInput.lower() == "d":
-                return 3
-        elif (moves == 0):
-            playerInput = input(
-                "Hit - h | Stand - l| Double down - d\n")
-            if playerInput.lower() == "l":
-                return 0
-            elif playerInput.lower() == "h":
-                return 1
-            elif playerInput.lower() == "d":
-                return 3
+    def move(self, moves, split):
+        if(split == True):
+            if (moves == 0):
+                playerInput = input(
+                    "Hit - h | Stand - l| Double down - d\n")
+                if playerInput.lower() == "l":
+                    return 0
+                elif playerInput.lower() == "h":
+                    return 1
+                elif playerInput.lower() == "d":
+                    return 3
+            else:
+                playerInput = input("Hit - h | Stand - l\n")
+                if playerInput.lower() == "l":
+                    return 0
+                elif playerInput.lower() == "h":
+                    return 1
         else:
-            playerInput = input("Hit - h | Stand - l\n")
-            if playerInput.lower() == "l":
-                return 0
-            elif playerInput.lower() == "h":
-                return 1
+            if (self.checkForSplit() and moves == 0):
+                playerInput = input(
+                    "Hit - h | Stand - l| Split - s| Double down - d\n")
+                if playerInput.lower() == "l":
+                    return 0
+                elif playerInput.lower() == "h":
+                    return 1
+                elif playerInput.lower() == "s":
+                    return 2
+                elif playerInput.lower() == "d":
+                    return 3
+            elif (moves == 0):
+                playerInput = input(
+                    "Hit - h | Stand - l| Double down - d\n")
+                if playerInput.lower() == "l":
+                    return 0
+                elif playerInput.lower() == "h":
+                    return 1
+                elif playerInput.lower() == "d":
+                    return 3
+            else:
+                playerInput = input("Hit - h | Stand - l\n")
+                if playerInput.lower() == "l":
+                    return 0
+                elif playerInput.lower() == "h":
+                    return 1
 
     #prints cards if input is split
     def split_print(self):
-        string = "Hand 1 SUM - {} \t\tHand 2 SUM - {}\n".format(
-            self.calculateHandSum(self.hand), self.calculateHandSum(self.splitHand))
-        string += ""
-        # for cards in len(self.hand) + len(self.splitHand):
-        #     string += 
+        string = "Hand 1 SUM - {} \t\n".format(
+            self.calculateHandSum(self.hand))
+        string += self.printLineDown(self.hand) + "\n"
+        for i in self.hand:
+            string  += self.printSymbol(i)
+        string += "\n" + self.printStraightLine(self.hand)
+        string += "\n" + self.printStraightLine(self.hand) + "\n"
+        string += self.printLineDown(self.hand) + "\n"
+        string = "Hand 2 SUM - {} \t\n".format(
+                    self.calculateHandSum(self.splitHand))
+        string += self.printLineDown(self.splitHand) + "\n"
+        for i in self.splitHand:
+            string  += self.printSymbol(i)
+        string += "\n" + self.printStraightLine(self.splitHand)
+        string += "\n" + self.printStraightLine(self.splitHand) + "\n"
+        string += self.printLineDown(self.splitHand) + "\n"
         return string
     #prints cards
     def __str__(self) -> str:
@@ -395,24 +430,24 @@ class Dealer(Player):
     def __str__(self) -> str:
         string = ("{} Hand Sum - {} |\n".format(
         self.name, self.calculateHandSum(self.hand))) 
-        string += self.printLineDown() + "\n"
+        string += self.printLineDown(self.hand) + "\n"
         for i in self.hand:
             string  += self.printSymbol(i)
-        string += "\n" + self.printStraightLine()
-        string += "\n" + self.printStraightLine() + "\n"
-        string += self.printLineDown()
+        string += "\n" + self.printStraightLine(self.hand)
+        string += "\n" + self.printStraightLine(self.hand) + "\n"
+        string += self.printLineDown(self.hand)
         return string
     #prints cards but hides the second one
     def first_hand_print(self):
         string = "{} hand | {} \n".format(
             self.name, self.calculateHandSum(self.hand) - self.hand[1].value)
-        string += self.printLineDown() + "\n"
+        string += self.printLineDown(self.hand) + "\n"
         for i in self.hand:
             string  += self.printSymbol(i)
             string += str(("|{}/{}  |".format("x", "?")))
-            string += "\n" + self.printStraightLine()
-            string += "\n" + self.printStraightLine() + "\n"
-            string += self.printLineDown()
+            string += "\n" + self.printStraightLine(self.hand)
+            string += "\n" + self.printStraightLine(self.hand) + "\n"
+            string += self.printLineDown(self.hand)
             break
         return string
     #makes move based on player hand
