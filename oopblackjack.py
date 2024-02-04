@@ -1,13 +1,9 @@
 import random as rand
 # Ta pati deja cits stils
 
-# Errors ir tads ka man nav while loops ielikts, sanak es ievadu ka gribu splitot, tas sasplito kartis, un pec tam atkal jauta vai grib splitot
-# pat tad kad tas ir sasplitojis, tapec met erroru ka ir index out of range. RISINAJUMS - vajag ielikt ieksa while loop, kas jauta vai hitot
-# 1 roku un pec tam otro roku.
 #TODO
 """
 1. Ace vertiba var but 1/11
-2. salabot split printu, split hit
 3. Edge case, kad pirmas kartis abas ir ace
 4. Winning conditions
 """
@@ -69,8 +65,7 @@ class Table():
                 string += "\n\n\n\n\n\n"
                 string += "{}".format(self.player.split_print())
                 return string
-    # galvena cilpa jeb speles solu seciba
-
+    # main function
     def main(self):
 
         # No sakuma speletajs kustas
@@ -103,12 +98,53 @@ class Table():
                     self.player.splitHand.append(self.player.hand[1])
                     # Nonemam no orginala decka karti
                     self.player.hand.pop()
-                    # izprintejam decku
+                    # need to check if we need to go to the second hand
+                    moveHand = False
                     while(self.split == True):
-                        print(self)
-                        playerInput = self.player.move(self.moves,self.split)
-                        if (playerInput == 0):
-                            
+                        while(self.dealerMove == False and self.player.calculateHandSum(self.player.hand) < 21 and moveHand == False):
+                            print(self)
+                            print("HAND 1 \|/")
+                            playerInput = self.player.move(self.moves,self.split)
+                            # There are two hands so if stand on the 1st go to the next hand
+                            if (playerInput == 1):
+                                self.player.hand.append(self.deck.giveCard())
+                                self.moves += 1
+                            elif (playerInput == 3 and self.moves == 0):
+                                if (self.player.funds - self.player.bet >= 0):
+                                    self.player.hand.append(self.deck.giveCard())
+                                    self.moves += 1
+                                    moveHand = True
+                                    break
+                                else:
+                                    print("You don't have enough money")
+                                    print("Your balance - {}$".format(self.player.funds))
+                            elif(playerInput == 0 or moveHand == True):
+                                self.moves = 0
+                                while(self.dealerMove == False and self.player.calculateHandSum(self.player.splitHand) < 21):
+                                    print(self)
+                                    print("HAND 2 \|/")
+                                    playerInput = self.player.move(self.moves,self.split)
+                                    if (playerInput == 0):
+                                        self.split = False
+                                        self.dealerMove = True
+                                        break
+                                    elif (playerInput == 1):
+                                        self.player.splitHand.append(self.deck.giveCard())
+                                        self.moves += 1
+                                    elif (playerInput == 3 and self.moves == 0):
+                                        if (self.player.funds - self.player.bet >= 0):
+                                            self.player.splitHand.append(self.deck.giveCard())
+                                            self.moves += 1
+                                            self.split = False
+                                            self.dealerMove = True
+                                            break
+                                        else:
+                                            print("You don't have enough money")
+                                            print("Your balance - {}$".format(self.player.funds))
+                                    else:
+                                        print("Input a valid move!")
+                            else:
+                                print("Input a valid move!")
                 else:
                     print("You don't have enough money")
                     print("Your balance - {}$".format(self.player.funds))
@@ -405,7 +441,7 @@ class Human(Player):
         string += "\n" + self.printStraightLine(self.hand)
         string += "\n" + self.printStraightLine(self.hand) + "\n"
         string += self.printLineDown(self.hand) + "\n"
-        string = "Hand 2 SUM - {} \t\n".format(
+        string += "Hand 2 SUM - {} \t\n".format(
                     self.calculateHandSum(self.splitHand))
         string += self.printLineDown(self.splitHand) + "\n"
         for i in self.splitHand:
