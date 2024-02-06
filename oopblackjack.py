@@ -3,8 +3,8 @@ import random as rand
 
 #TODO
 """
-1. Ace vertiba var but 1/11
-3. Edge case, kad pirmas kartis abas ir ace
+3. Edge case kad abas kartis var but Ace un pirmaja roka ja kada no kartim ir ace
+3.1 Dilerim japiliek ka vins nem ace
 4. Winning conditions
 """
 
@@ -27,6 +27,7 @@ class Table():
         self.dealerMove = False
         self.moves = 0
         self.split = False
+        self.doubleAceSplit = False
 
         # Seit noteik speles seciba
         self.deal_first_hand()
@@ -36,17 +37,17 @@ class Table():
 
     def deal_first_hand(self):
         #for split tests
-        self.player.hand.append(Card(3,"Spades", "three"))
+        self.player.hand.append(Card(11,"Spades", "ace"))
         self.dealer.hand.append(self.deck.giveCard())
-        self.player.hand.append(Card(3,"Spades", "three"))
+        self.player.hand.append(Card(11,"Spades", "ace"))
         self.dealer.hand.append(self.deck.giveCard())
 
         # self.player.hand.append(self.deck.giveCard())
         # self.dealer.hand.append(self.deck.giveCard())
         # self.player.hand.append(self.deck.giveCard())
         # self.dealer.hand.append(self.deck.giveCard())
+
     # izprintejam informaciju par speletajiem
-
     def __str__(self):
         if (self.split == False):
             if (self.dealerMove or self.dealer.calculateHandSum(self.dealer.hand) == 21):
@@ -73,30 +74,34 @@ class Table():
                 return string
     # main function
     def main(self):
-
+        playerInput = ""
         # No sakuma speletajs kustas
         #uzliek naudu
         self.player.placeBet()
-
+        self.doubleAceSplit = self.player.checkFirstHand()
         # Ja speletajam ir zem 21 tas spele
-        while (self.dealerMove == False and self.player.calculateHandSum(self.player.hand) < 21):
+        while ((self.dealerMove == False and self.player.calculateHandSum(self.player.hand) < 21) or self.doubleAceSplit == True):
             # Paskatamies vai vispar vajag nemt kartis
-            if (self.player.calculateHandSum(self.player.hand) >= 21):
+            if (self.player.calculateHandSum(self.player.hand) >= 21 and self.doubleAceSplit != True):
                 self.dealerMove = True
             # !!!VAJAG PARBAUDIT KADI IR SPELETAJA IESPEJAMIE GAJIENI
             # Ta lai tas nevar ievadit splitu, kad tas nemaz nevar splitot
             print(self)
             print(len(self.player.hand))
-            playerInput = self.player.move(self.moves, self.split)
+            
+            if(self.doubleAceSplit == False):
+                playerInput = self.player.move(self.moves, self.split)
             # Player stands
             if (playerInput == 0):
                 self.dealerMove = True
             # Player hits
             elif (playerInput == 1):
-                self.player.hand.append(self.deck.giveCard())
+                card = self.deck.giveCard()
+                self.player.checkAce(card)
+                self.player.hand.append(card)
                 self.moves += 1
             # Player split
-            elif (playerInput == 2 and self.player.hand[0].name == self.player.hand[1].name and self.moves == 0):
+            elif ((playerInput == 2 and self.player.hand[0].name == self.player.hand[1].name and self.moves == 0) or self.doubleAceSplit == True):
                 self.split = True
                 # parbaudam vai pieteik nauda lai vispar veiktu split
                 if (self.player.funds - self.player.bet >= 0):
@@ -106,6 +111,7 @@ class Table():
                     self.player.hand.pop()
                     # need to check if we need to go to the second hand
                     moveHand = False
+                    print(self.dealerMove)
                     while(self.dealerMove == False and moveHand == False):
                         if(self.player.calculateHandSum(self.player.hand) >= 21):
                             moveHand = True
@@ -115,11 +121,15 @@ class Table():
                         playerInput = self.player.move(self.moves,self.split)
                         # There are two hands so if stand on the 1st go to the next hand
                         if (playerInput == 1 and moveHand!=True):
-                            self.player.hand.append(self.deck.giveCard())
+                            card = self.deck.giveCard()
+                            self.player.checkAce(card)
+                            self.player.hand.append(card)
                             self.moves += 1
                         elif (playerInput == 3 and self.moves == 0 and moveHand!=True):
                             if (self.player.funds - self.player.bet >= 0):
-                                self.player.hand.append(self.deck.giveCard())
+                                card = self.deck.giveCard()
+                                self.player.checkAce(card)
+                                self.player.hand.append(card)
                                 self.moves += 1
                                 moveHand = True
                                 break
@@ -134,6 +144,7 @@ class Table():
                             print("Input a valid move!")
                     while(self.dealerMove == False):
                         if (self.player.calculateHandSum(self.player.splitHand) >= 21):
+                            self.doubleAceSplit = False
                             self.dealerMove = True
                             break
                         print(self)
@@ -141,15 +152,21 @@ class Table():
                         playerInput = self.player.move(self.moves,self.split)
                         if (playerInput == 0):
                             self.dealerMove = True
+                            self.doubleAceSplit = False
                             break
                         elif (playerInput == 1):
-                            self.player.splitHand.append(self.deck.giveCard())
+                            card = self.deck.giveCard()
+                            self.player.checkAce(card)
+                            self.player.splitHand.append(card)
                             self.moves += 1
                         elif (playerInput == 3 and self.moves == 0):
                             if (self.player.funds - self.player.bet >= 0):
-                                self.player.splitHand.append(self.deck.giveCard())
+                                card = self.deck.giveCard()
+                                self.player.checkAce(card)
+                                self.player.splitHand.append(card)
                                 self.moves += 1
                                 self.dealerMove = True
+                                self.doubleAceSplit = False
                                 break
                             else:
                                 print("You don't have enough money")
@@ -164,7 +181,9 @@ class Table():
             # Double down
             elif (playerInput == 3 and self.moves == 0):
                 if (self.player.funds - self.player.bet >= 0):
-                    self.player.hand.append(self.deck.giveCard())
+                    card = self.deck.giveCard()
+                    self.player.checkAce(card)
+                    self.player.hand.append(card)
                     self.moves += 1
                     self.dealerMove = True
                 else:
@@ -227,11 +246,10 @@ class Card():
         "Clubs": "\u2663"
     }
 
-    def __init__(self, value, suit, name,checked):
+    def __init__(self, value, suit, name):
         self.value = value
         self.suit = suit
         self.name = name
-        self.checked = "unchecked"
 
 
 class Deck():
@@ -251,37 +269,38 @@ class Deck():
         for value in range(2, 17):
             for suit in ["Clubs", "Spades", "Hearts", "Diamonds"]:
                 if value == 2:
-                    self.deck.append(Card(value, suit, "two", "unchecked"))
+                    self.deck.append(Card(value, suit, "two"))
                 elif value == 3:
-                    self.deck.append(Card(value, suit, "three", "unchecked"))
+                    self.deck.append(Card(value, suit, "three"))
                 elif value == 4:
-                    self.deck.append(Card(value, suit, "four", "unchecked"))
+                    self.deck.append(Card(value, suit, "four"))
                 elif value == 5:
-                    self.deck.append(Card(value, suit, "five", "unchecked"))
+                    self.deck.append(Card(value, suit, "five"))
                 elif value == 6:
-                    self.deck.append(Card(value, suit, "six", "unchecked"))
+                    self.deck.append(Card(value, suit, "six"))
                 elif value == 7:
-                    self.deck.append(Card(value, suit, "seven", "unchecked"))
+                    self.deck.append(Card(value, suit, "seven"))
                 elif value == 8:
-                    self.deck.append(Card(value, suit, "eight", "unchecked"))
+                    self.deck.append(Card(value, suit, "eight"))
                 elif value == 9:
-                    self.deck.append(Card(value, suit, "nine", "unchecked"))
+                    self.deck.append(Card(value, suit, "nine"))
                 elif value == 10:
-                    self.deck.append(Card(value, suit, "ten", "unchecked"))
+                    self.deck.append(Card(value, suit, "ten"))
                 elif value == 11:
-                    self.deck.append(Card(10, suit, "jack", "unchecked"))
+                    self.deck.append(Card(10, suit, "jack"))
                 elif value == 12:
-                    self.deck.append(Card(10, suit, "queen", "unchecked"))
+                    self.deck.append(Card(10, suit, "queen"))
                 elif value == 13:
-                    self.deck.append(Card(10, suit, "king", "unchecked"))
+                    self.deck.append(Card(10, suit, "king"))
                 elif value == 14:
-                    self.deck.append(Card(11, suit, "ace", "unchecked"))
+                    self.deck.append(Card(11, suit, "ace"))
                 else:
                     pass
         self.shufleDeck()
 
     def giveCard(self):
-        return self.deck.pop()
+        card = self.deck.pop()
+        return card
 
     def shufleDeck(self):
         copyDeck = self.deck.copy()
@@ -346,7 +365,10 @@ class Player():
             else:
                 string += str(("|{}/{} |".format(i.value, i.suit_unicode[i.suit])))
         else:
-            string += str(("|{}/{}  |".format(i.value, i.suit_unicode[i.suit])))
+            if (i.name == "ace"):
+                string += str(("|{}/{}  |".format("A", i.suit_unicode[i.suit])))
+            else:
+                string += str(("|{}/{}  |".format(i.value, i.suit_unicode[i.suit])))
         return string
 
     def __str__(self) -> str:
@@ -359,12 +381,6 @@ class Player():
         string += "\n" + self.printStraightLine(self.hand) + "\n"
         string += self.printLineDown(self.hand)
         return string
-    
-    @staticmethod
-    def checkAce(deck):
-        for card in deck:
-            if (card.name == "ace" and card.checked == "unchecked"):
-                
 
 
 # Mes sito dzeku kontrolesim
@@ -473,6 +489,53 @@ class Human(Player):
     def __str__(self) -> str:
         return super().__str__()
 
+    def checkAce(self,card):
+        if(card.name == "ace" and self.calculateHandSum(self.hand) + card.value > 21):
+            card.value = 1
+        elif(card.name == "ace"):
+            while(True):
+                playerinput = input("Choose ace value!(1/11)")
+                if (playerinput == "1"):
+                    card.value = 1
+                    break
+                elif (playerinput == "11"):
+                    card.value = 11
+                    break
+                else:
+                    print("input 1 or 11")
+    
+    def checkFirstHand(self):
+        if(self.hand[0].name == "ace" and self.hand[1].name == "ace"):
+            while(True):
+                print("YIKES you got two aces!")
+                playerInput = input("Choose hand value! (2/12) or s-split")
+                if(playerInput == "2"):
+                    self.hand[0].value = 1
+                    self.hand[1].value = 1
+                    return False
+                elif(playerInput == "12"):
+                    self.hand[1].value = 1
+                    return False
+                elif(playerInput == "s"):
+                    return True
+                else:
+                    print("input 2, 12 or s")
+        elif(self.hand[0].name == "ace" or self.hand[1].name == "ace"):
+            for card in self.hand:
+                if(card.name == "ace"):
+                    while(True):
+                        print("You got a ace!")
+                        playerInput = input("Choose a ace value! (1/11) ")
+                        if(playerInput == "1"):
+                            card.value = 1
+                            return False
+                        elif(playerInput == "11"):
+                            card.value = 11
+                            return False
+                        else:
+                            print("input 1 or 11")
+                    
+                        
 class Dealer(Player):
     """
     Klase dileris ir apaksklase speletajam
