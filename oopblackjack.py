@@ -37,15 +37,15 @@ class Table():
 
     def deal_first_hand(self):
         #for split tests
-        # self.player.hand.append(Card(11,"Spades", "ace"))
-        # self.dealer.hand.append(self.deck.giveCard())
-        # self.player.hand.append(Card(11,"Spades", "ace"))
-        # self.dealer.hand.append(self.deck.giveCard())
+        self.player.hand.append(Card(11,"Spades", "ace"))
+        self.dealer.hand.append(self.deck.giveCard())
+        self.player.hand.append(Card(11,"Spades", "ace"))
+        self.dealer.hand.append(self.deck.giveCard())
 
-        self.player.hand.append(self.deck.giveCard())
-        self.dealer.hand.append(self.deck.giveCard())
-        self.player.hand.append(self.deck.giveCard())
-        self.dealer.hand.append(self.deck.giveCard())
+        # self.player.hand.append(self.deck.giveCard())
+        # self.dealer.hand.append(self.deck.giveCard())
+        # self.player.hand.append(self.deck.giveCard())
+        # self.dealer.hand.append(self.deck.giveCard())
 
     # izprintejam informaciju par speletajiem
     def __str__(self):
@@ -223,8 +223,64 @@ class Table():
         # un dilerim 21
         print(self)
         if(self.split == True):
-            #if split is true we calculate winning conditions differently
-            pass
+            if (self.player.calculateHandSum(self.player.hand) <= 21 and self.player.calculateHandSum(self.player.splitHand) <= 21 
+                and self.dealer.calculateHandSum(self.dealer.hand) <= 21):
+                if (self.player.calculateHandSum(self.player.hand) == self.dealer.calculateHandSum(self.dealer.hand) 
+                    and self.player.calculateHandSum(self.player.splitHand) == self.dealer.calculateHandSum(self.dealer.hand)):
+                    payout = self.player.bet
+                    self.player.funds += payout
+                    print("You both got the same hand value on both hands!")
+                elif (self.player.calculateHandSum(self.player.hand) > self.dealer.calculateHandSum(self.dealer.hand) 
+                      and self.player.calculateHandSum(self.player.splitHand) > self.dealer.calculateHandSum(self.dealer.hand)):
+                    payout = (self.player.bet * 2) * 2
+                    self.player.funds += payout
+                    print("You won both hands! \nYou won {}$".format(payout))
+                elif (self.player.calculateHandSum(self.player.hand) > self.dealer.calculateHandSum(self.dealer.hand) 
+                      or self.player.calculateHandSum(self.player.splitHand) > self.dealer.calculateHandSum(self.dealer.hand)):
+                    hand = "1st" if self.player.calculateHandSum(self.player.hand) > self.player.calculateHandSum(self.player.splitHand) else "2nd"
+                    payout = self.player.bet * 2
+                    self.player.funds += payout
+                    print("You won {} hand! \nYou won {}$".format(hand,payout))
+                elif (self.player.calculateHandSum(self.player.hand) < self.dealer.calculateHandSum(self.dealer.hand) 
+                      and self.player.calculateHandSum(self.player.splitHand) < self.dealer.calculateHandSum(self.dealer.hand)):
+                    print("You lost both hand!")
+                elif (self.player.calculateHandSum(self.player.hand) < self.dealer.calculateHandSum(self.dealer.hand) 
+                      or self.player.calculateHandSum(self.player.splitHand) < self.dealer.calculateHandSum(self.dealer.hand)):
+                    hand = "1st" if self.player.calculateHandSum(self.player.hand) < self.player.calculateHandSum(self.player.splitHand) else "2nd"
+                    payout = self.player.bet * 2
+                    self.player.funds += payout
+                    print("You won {} hand! \nYou won {}$".format(hand,payout))
+                else:
+                    print("You lost both hand!")
+            elif ((self.player.calculateHandSum(self.player.hand) <= 21 or self.player.calculateHandSum(self.player.splitHand) <= 21) 
+                and self.dealer.calculateHandSum(self.dealer.hand) <= 21):
+                hand = "1st" if self.player.calculateHandSum(self.player.hand) <= 21 else "2nd"
+                if (self.player.calculateHandSum(self.player.hand) == self.dealer.calculateHandSum(self.dealer.hand)):
+                    #we lose here
+                    self.player.bet /= 2
+                    payout = self.player.bet
+                    self.player.funds += payout
+                    print("You both got the same hand value on {} hand!\nYou lost {}$".format(hand,payout))
+                elif (self.player.calculateHandSum(self.player.hand) > self.dealer.calculateHandSum(self.dealer.hand)):
+                    payout = self.player.bet * 2
+                    self.player.funds += payout
+                    print("You won {} hand! \nYou won {}$".format(hand,payout))
+                else:
+                    print("You lost both hand!")
+            elif (self.player.calculateHandSum(self.player.hand) <= 21 and self.player.calculateHandSum(self.player.splitHand) <= 21 
+                and self.dealer.calculateHandSum(self.dealer.hand) > 21):
+                payout = (self.player.bet * 2) * 2
+                self.player.funds += payout
+                print("You won both hands! \nYou won {}$".format(payout))
+            elif ((self.player.calculateHandSum(self.player.hand) <= 21 or self.player.calculateHandSum(self.player.splitHand) <= 21) 
+                and self.dealer.calculateHandSum(self.dealer.hand) > 21):
+                hand = "1st" if self.player.calculateHandSum(self.player.hand) <= 21 else "2nd"
+                payout = self.player.bet * 2
+                self.player.funds += payout
+                print("You won {} hand! \nYou won {}$".format(hand,payout))
+            else:
+                print("You lost!")
+                
         else:
             if (self.player.calculateHandSum(self.player.hand) <= 21 and self.dealer.calculateHandSum(self.dealer.hand) <= 21):
                 if (self.moves == 0 and self.player == 21 and self.dealer == 21):
@@ -241,7 +297,7 @@ class Table():
                 elif (self.player.calculateHandSum(self.player.hand) > self.dealer.calculateHandSum(self.dealer.hand)):
                     payout = self.player.bet * 2
                     self.player.funds += payout
-                    print("You won whis hand! \nYou won {}$".format(payout))
+                    print("You won this hand! \nYou won {}$".format(payout))
                 else:
                     print("You lost the hand!")
             elif (self.player.calculateHandSum(self.player.hand) < 21 and self.dealer.calculateHandSum(self.dealer.hand) > 21):
