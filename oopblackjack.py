@@ -3,9 +3,9 @@ import random as rand
 
 #TODO
 """
-3. Edge case kad abas kartis var but Ace un pirmaja roka ja kada no kartim ir ace
-3.1 Dilerim japiliek ka vins nem ace
-4. Winning conditions
+2. a bit more advanced dealer that trys to win atleast one of the hands if the player splits
+3. Loop that i can get out of the program without hittinh Ctrl + C
+4. Winning conditions for split
 """
 
 class Table():
@@ -37,15 +37,15 @@ class Table():
 
     def deal_first_hand(self):
         #for split tests
-        self.player.hand.append(Card(11,"Spades", "ace"))
-        self.dealer.hand.append(self.deck.giveCard())
-        self.player.hand.append(Card(11,"Spades", "ace"))
-        self.dealer.hand.append(self.deck.giveCard())
+        # self.player.hand.append(Card(11,"Spades", "ace"))
+        # self.dealer.hand.append(self.deck.giveCard())
+        # self.player.hand.append(Card(11,"Spades", "ace"))
+        # self.dealer.hand.append(self.deck.giveCard())
 
-        # self.player.hand.append(self.deck.giveCard())
-        # self.dealer.hand.append(self.deck.giveCard())
-        # self.player.hand.append(self.deck.giveCard())
-        # self.dealer.hand.append(self.deck.giveCard())
+        self.player.hand.append(self.deck.giveCard())
+        self.dealer.hand.append(self.deck.giveCard())
+        self.player.hand.append(self.deck.giveCard())
+        self.dealer.hand.append(self.deck.giveCard())
 
     # izprintejam informaciju par speletajiem
     def __str__(self):
@@ -78,17 +78,18 @@ class Table():
         # No sakuma speletajs kustas
         #uzliek naudu
         self.player.placeBet()
+        if(self.player.hand[0].name == "ace" or self.player.hand[1].name == "ace" ):
+            print(self)
         self.doubleAceSplit = self.player.checkFirstHand()
         # Ja speletajam ir zem 21 tas spele
-        while ((self.dealerMove == False and self.player.calculateHandSum(self.player.hand) < 21) or self.doubleAceSplit == True):
+        while (self.dealerMove == False or self.doubleAceSplit == True):
             # Paskatamies vai vispar vajag nemt kartis
             if (self.player.calculateHandSum(self.player.hand) >= 21 and self.doubleAceSplit != True):
                 self.dealerMove = True
+                break
             # !!!VAJAG PARBAUDIT KADI IR SPELETAJA IESPEJAMIE GAJIENI
             # Ta lai tas nevar ievadit splitu, kad tas nemaz nevar splitot
             print(self)
-            print(len(self.player.hand))
-            
             if(self.doubleAceSplit == False):
                 playerInput = self.player.move(self.moves, self.split)
             # Player stands
@@ -127,6 +128,8 @@ class Table():
                             self.moves += 1
                         elif (playerInput == 3 and self.moves == 0 and moveHand!=True):
                             if (self.player.funds - self.player.bet >= 0):
+                                self.player.funds -= self.player.bet
+                                self.player.bet += self.player.bet
                                 card = self.deck.giveCard()
                                 self.player.checkAce(card)
                                 self.player.hand.append(card)
@@ -161,6 +164,8 @@ class Table():
                             self.moves += 1
                         elif (playerInput == 3 and self.moves == 0):
                             if (self.player.funds - self.player.bet >= 0):
+                                self.player.funds -= self.player.bet
+                                self.player.bet += self.player.bet
                                 card = self.deck.giveCard()
                                 self.player.checkAce(card)
                                 self.player.splitHand.append(card)
@@ -181,6 +186,8 @@ class Table():
             # Double down
             elif (playerInput == 3 and self.moves == 0):
                 if (self.player.funds - self.player.bet >= 0):
+                    self.player.funds -= self.player.bet
+                    self.player.bet += self.player.bet
                     card = self.deck.giveCard()
                     self.player.checkAce(card)
                     self.player.hand.append(card)
@@ -200,13 +207,13 @@ class Table():
             # Ja ir janem karti
             if (self.dealer.move(self.player) == True):
                 # Tas nems karti
-                self.dealer.hand.append(self.deck.giveCard())
+                card = self.deck.giveCard()
+                self.dealer.checkAce(card)
+                self.dealer.hand.append(card)
                 print(self)
             else:
                 # Preteji tas beigs gajienu
                 break
-
-    # parbaudam kurs uzvareja speli
 
     # JAPAPILDINA AR VEL UZVARAS KONDICIJAM
     def checkForWinner(self):
@@ -215,10 +222,35 @@ class Table():
         # Seit mes skatamies vai speletajam ir blackjacks
         # un dilerim 21
         print(self)
-        if (self.moves == 0 and self.player == 21 and self.dealer == 21):
-            print("No one wins!")
-        elif (self.moves == 0 and self.player == 21):
-            print("Player got BLACKJACK! - {}")
+        if(self.split == True):
+            #if split is true we calculate winning conditions differently
+            pass
+        else:
+            if (self.player.calculateHandSum(self.player.hand) <= 21 and self.dealer.calculateHandSum(self.dealer.hand) <= 21):
+                if (self.moves == 0 and self.player == 21 and self.dealer == 21):
+                    self.player.funds += self.player.bet
+                    print("No one wins!")
+                elif (self.moves == 0 and self.player.calculateHandSum(self.player.hand) == 21):
+                    payout = (self.player.bet * 1.5) + self.player.bet
+                    self.player.funds += payout 
+                    print("Player got BLACKJACK! \nYou won {}$".format(payout))
+                elif (self.player.calculateHandSum(self.player.hand) == self.dealer.calculateHandSum(self.dealer.hand)):
+                    payout = self.player.bet
+                    self.player.funds += payout
+                    print("You both got the same hand value!")
+                elif (self.player.calculateHandSum(self.player.hand) > self.dealer.calculateHandSum(self.dealer.hand)):
+                    payout = self.player.bet * 2
+                    self.player.funds += payout
+                    print("You won whis hand! \nYou won {}$".format(payout))
+                else:
+                    print("You lost the hand!")
+            elif (self.player.calculateHandSum(self.player.hand) < 21 and self.dealer.calculateHandSum(self.dealer.hand) > 21):
+                payout = self.player.bet * 2
+                self.player.funds += payout
+                print("You won this hand! \nYou won {}$".format(payout))
+            else:
+                print("You lost")
+                
     # Resests the deck if cards are below 10
     def resetAll(self):
         pass
@@ -416,7 +448,7 @@ class Human(Player):
         self.funds += payout
     #checks if player has split
     def checkForSplit(self):
-        if (self.hand[0].name == self.hand[1].name):
+        if (self.hand[0].name == self.hand[1].name and self.hand[0].value == self.hand[1].value):
             return True
         else:
             return False
@@ -520,7 +552,7 @@ class Human(Player):
                     return True
                 else:
                     print("input 2, 12 or s")
-        elif(self.hand[0].name == "ace" or self.hand[1].name == "ace"):
+        elif(self.hand[0].name == "ace" or self.hand[1].name == "ace" and self.calculateHandSum(self.hand) != 21):
             for card in self.hand:
                 if(card.name == "ace"):
                     while(True):
@@ -534,6 +566,8 @@ class Human(Player):
                             return False
                         else:
                             print("input 1 or 11")
+        else:
+            return False
                     
                         
 class Dealer(Player):
@@ -574,5 +608,8 @@ class Dealer(Player):
             return True
         return False
 
+    def checkAce(self, card):
+        if (card.name == "ace" and (self.calculateHandSum(self.hand) + card.value > 21)):
+            card.value = 1
 
 table = Table("Maris", "Dileris")
