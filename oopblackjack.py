@@ -3,7 +3,6 @@ import random as rand
 
 #TODO
 """
-2. a bit more advanced dealer that trys to win atleast one of the hands if the player splits
 """
 
 class Table():
@@ -238,99 +237,73 @@ class Table():
         #we divide payout by 2 because if the player wins the hand he gets back the inital bet + the winnings
         print(self)
         if(self.split == True):
-            
             firstHand = self.player.calculateHandSum(self.player.hand)
             secondHand = self.player.calculateHandSum(self.player.splitHand)
             dealerHand = self.dealer.calculateHandSum(self.dealer.hand)
-            if (firstHand <= 21 and secondHand <= 21 
-                and dealerHand <= 21):
-                if (firstHand == dealerHand 
-                    and secondHand == dealerHand):
+            if firstHand <= 21 and secondHand <= 21 and dealerHand <= 21:
+                if firstHand == dealerHand == secondHand:
                     payout = self.player.bet + self.player.secondHandBet
                     self.player.funds += payout
-                    print("You both got the same hand value on both hands!")
-                elif ((firstHand == dealerHand
-                      or secondHand == dealerHand)
-                      and (firstHand > dealerHand
-                      or secondHand > dealerHand)):
-                    hand = "1st" if firstHand == dealerHand else "2nd"
-                    payout = 0
-                    if (hand == "1st"):
-                        payout = self.player.bet + (self.player.secondHandBet * 2)
-                    else:
-                        payout = self.player.secondHandBet + (self.player.bet * 2)
+                    print("You and the dealer tied on both hands! You win ${}.".format(payout))
+                elif firstHand > dealerHand and secondHand > dealerHand:
+                    payout = self.player.bet * 2 + self.player.secondHandBet * 2
                     self.player.funds += payout
-                    print("You matched the {} hand. Won the other hand")
-                elif ((firstHand == dealerHand 
-                    or secondHand == dealerHand)
-                    and (firstHand < dealerHand
-                    or secondHand < dealerHand)):
-                    hand = "1st" if firstHand == dealerHand else "2nd"
-                    payout = 0
-                    if (hand == "1st"):
+                    print("You beat the dealer on both hands! You win ${}.".format(payout/2))
+                elif firstHand > dealerHand or secondHand > dealerHand:
+                    if firstHand > dealerHand:
+                        payout = self.player.bet * 2
+                        self.player.funds += payout
+                        print("You beat the dealer on your first hand! You win ${}.".format(payout/2))
+                    else:
+                        payout = self.player.secondHandBet * 2
+                        self.player.funds += payout
+                        print("You beat the dealer on your second hand! You win ${}.".format(payout/2))
+                else:
+                    print("You lost both hands!")
+
+            elif (firstHand <= 21 or secondHand <= 21) and dealerHand <= 21:
+                if firstHand <= 21:
+                    hand = "first"
+                    if firstHand == dealerHand:
                         payout = self.player.bet
+                        self.player.funds += payout
+                        print("You and the dealer tied on the {} hand! You win ${}.".format(hand, payout))
+                    elif firstHand > dealerHand:
+                        payout = self.player.bet * 2
+                        self.player.funds += payout
+                        print("You beat the dealer on the {} hand! You win ${}.".format(hand, payout/2))
                     else:
+                        print("You lost both hands!")
+                else:
+                    hand = "second"
+                    if secondHand == dealerHand:
                         payout = self.player.secondHandBet
-                    self.player.funds += payout
-                    print("Yout mathced the {} hand!\nYou got money back for one of your hands {}$".format(hand,payout))
-                elif (firstHand > dealerHand 
-                      and secondHand > dealerHand):
-                    payout = (self.player.bet * 2) + (self.player.secondHandBet * 2)
-                    self.player.funds += payout
-                    print("You won both hands! \nYou won {}$".format(payout/2))
-                elif (firstHand > dealerHand 
-                      or secondHand > dealerHand):
-                    hand = "1st" if firstHand > secondHand else "2nd"
-                    payout = 0
-                    if (hand == "1st"):
-                        payout = self.player.bet * 2
-                    else:
+                        self.player.funds += payout
+                        print("You and the dealer tied on the {} hand! You win ${}.".format(hand, payout))
+                    elif secondHand > dealerHand:
                         payout = self.player.secondHandBet * 2
-                    self.player.funds += payout
-                    print("You won {} hand! \nYou won {}$".format(hand,payout/2))
-                elif (firstHand < dealerHand 
-                      and secondHand < dealerHand):
-                    print("You lost both hand!")
-                elif ((firstHand < dealerHand 
-                      or secondHand < dealerHand)
-                      and (firstHand > dealerHand
-                      or secondHand > dealerHand)):
-                    hand = "1st" if firstHand > secondHand else "2nd"
-                    payout = 0
-                    if (hand == "1st"):
-                        payout = self.player.bet * 2
+                        self.player.funds += payout
+                        print("You beat the dealer on the {} hand! You win ${}.".format(hand, payout/2))
                     else:
-                        payout = self.player.secondHandBet * 2
-                    self.player.funds += payout
-                    print("You won {} hand! \nYou won {}$".format(hand,payout/2))
-                else:
-                    print("You lost both hand!")
-            elif ((firstHand > 21 or secondHand > 21) 
-                and dealerHand <= 21):
-                hand = "1st" if firstHand <= 21 else "2nd"
-                if (firstHand == dealerHand):
-                    #we lose here
-                    self.player.bet /= 2
-                    payout = self.player.bet
-                    self.player.funds += payout
-                    print("You both got the same hand value on {} hand!\nYou lost {}$".format(hand,payout))
-                elif (firstHand > dealerHand):
-                    payout = (self.player.bet/2) * 2
-                    self.player.funds += payout
-                    print("You won {} hand! \nYou won {}$".format(hand,payout/2))
-                else:
-                    print("You lost both hand!")
-            elif (firstHand <= 21 and secondHand <= 21 
-                and dealerHand > 21):
-                payout = (self.player.bet * 2) + (self.player.secondHandBet * 2)
+                        print("You lost both hands!")
+
+            elif firstHand <= 21 and secondHand <= 21 and dealerHand > 21:
+                payout = self.player.bet * 2 + self.player.secondHandBet * 2
                 self.player.funds += payout
-                print("You won both hands! \nYou won {}$".format(payout/2))
-            elif ((firstHand <= 21 or secondHand <= 21) 
-                and dealerHand > 21):
-                hand = "1st" if firstHand <= 21 else "2nd"
-                payout = (self.player.bet/2) * 2
-                self.player.funds += payout
-                print("You won {} hand! \nYou won {}$".format(hand,payout/2))
+                print("Dealer busted! You win both hands! You win ${}.".format(payout/2))
+
+            elif (firstHand <= 21 or secondHand <= 21) and dealerHand > 21:
+                if firstHand <= 21:
+                    hand = "first"
+                    payout = self.player.bet * 2
+                    self.player.funds += payout
+                    print("Dealer busted, you busted on the {} hand! You win ${}.".format(hand, payout/2))
+                else:
+                    hand = "second"
+                    payout = self.player.secondHandBet * 2
+                    self.player.funds += payout
+                    print("Dealer busted, you busted on the {} hand! You win ${}.".format(hand, payout/2))
+
             else:
                 print("You lost!")
                 
